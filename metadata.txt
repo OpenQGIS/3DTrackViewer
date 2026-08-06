@@ -16,14 +16,14 @@ icon=icons/icon.png
 changelog=
   Version 1.2.3:
 
-  - ⚙️ 优化【轨迹分析单位设置】、【3D视图导出为图片】与【导出为GIF动画】弹窗布局，页面宽度缩减50%（180-200px），输入框收紧至1/3宽度，文本右对齐并缩小字号。 / Compacted unit settings, 3D image export and GIF export dialogs to 50% width (180-200px) with 1/3-width inputs, right-aligned labels and compact typography.
+  - ⚙️ 优化【轨迹分析单位设置】、【3D视图导出为图片】与【导出为GIF动画】弹窗布局，页面宽度缩减一半 (180-200px)，输入框收紧至1/3宽度，文本右对齐并缩小字号。 / Compacted unit settings, 3D image export and GIF export dialogs to half width (180-200px) with 1/3-width inputs, right-aligned labels and compact typography.
   - 🛠️ 调整工具栏按钮顺序（跟随显示在关键帧右侧，设置在跟随显示右侧），将原生Qt工具栏图标统一设为20x20px（按钮28x28px），并规范各导出按钮悬停提示。 / Reordered toolbar buttons (follow display after keyframe, settings after follow display), unified Qt toolbar icon size to 20x20px (28x28px button), and refined export tooltips.
   - 📍 升级鼠标跟随显示悬停窗口，首行自动展示GPX文件名或QGIS图层名，并优化各数据行字号与垂直间距。 / Upgraded mouse-follow tooltip to display GPX filename or QGIS layer name on the first line with compact row spacing and font sizing.
 
   Version 1.2.2:
 
   - 🧭 优化右下角三维坐标指示器尺寸与布局，确保任意极限视角下立方体距框架至少2px，框架距角度输入框2px。 / Optimized the bottom-right 3D orientation indicator so the cube retains at least 2px clearance from its frame at every extreme view, with a 2px gap from the frame to the angle inputs.
-  - 🖱️ 调整鼠标跟随信息窗口排版，标题保持加粗，时间、高程、速度和坡度及其数值使用不加粗的10px CSS字号（150%缩放下约15屏幕像素）。 / Refined the mouse-follow tooltip: the title remains bold while time, elevation, speed, slope and their values use a regular 10px CSS font (about 15 screen pixels at 150% scaling).
+  - 🖱️ 调整鼠标跟随信息窗口排版，标题保持加粗，时间、高程、速度和坡度及其数值使用不加粗的10px CSS字号（1.5倍缩放下约15屏幕像素）。 / Refined the mouse-follow tooltip: the title remains bold while time, elevation, speed, slope and their values use a regular 10px CSS font (about 15 screen pixels at 1.5x scaling).
 
   Version 1.2.1:
 

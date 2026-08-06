@@ -66,6 +66,12 @@ from qgis.core import (QgsCoordinateTransform, QgsCoordinateReferenceSystem,
 from .hover_utils import detect_field_and_unit
 
 # QGIS 3 / Qt 5 ships QtWebKit; QGIS 4 / Qt 6 uses QtWebEngine.
+
+def _enum(parent, group_name, attr_name):
+    """Retrieve an enum value compatible with both Qt 5 (PyQt5) and Qt 6 (PyQt6/PySide6)."""
+    group = getattr(parent, group_name, parent)
+    return getattr(group, attr_name)
+
 HAS_WEBVIEW = False
 WEB_BACKEND = None
 MAX_TRACK_FEATURES = 100000
@@ -109,11 +115,7 @@ if HAS_WEBVIEW:
             self._interaction_overlay.setFixedSize(
                 self.INTERACTION_ICON_SIZE, self.INTERACTION_ICON_SIZE)
             self._interaction_overlay.setStyleSheet("background: transparent;")
-            try:
-                self._interaction_overlay.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            except AttributeError:
-                self._interaction_overlay.setAttribute(
-                    Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+            self._interaction_overlay.setAttribute(_enum(Qt, "WidgetAttribute", "WA_TransparentForMouseEvents"), True)
             self._interaction_overlay.hide()
             self.setMouseTracking(True)
 
@@ -215,10 +217,7 @@ if HAS_WEBVIEW:
                     self._move_interaction_overlay(event.pos())
                     self._interaction_overlay.show()
                     self._interaction_overlay.raise_()
-                    try:
-                        self.setCursor(Qt.BlankCursor)
-                    except AttributeError:
-                        self.setCursor(Qt.CursorShape.BlankCursor)
+                    self.setCursor(_enum(Qt, "CursorShape", "BlankCursor"))
             if self._interaction_icon:
                 if self._point_is_in_viewport(event.pos()):
                     self._move_interaction_overlay(event.pos())
@@ -1115,12 +1114,8 @@ def qgis_theme_colors(widget):
     palette = widget.palette()
     font = widget.font()
 
-    try:
-        active_group = QPalette.Active
-        roles = QPalette
-    except AttributeError:
-        active_group = QPalette.ColorGroup.Active
-        roles = QPalette.ColorRole
+    active_group = _enum(QPalette, "ColorGroup", "Active")
+    roles = getattr(QPalette, "ColorRole", QPalette)
 
     def color(role):
         return palette.color(active_group, role).name()
@@ -1261,7 +1256,7 @@ class GifExportSettingsDialog(QDialog):
         form.setContentsMargins(4, 4, 4, 4)
         form.setHorizontalSpacing(4)
         form.setVerticalSpacing(4)
-        form.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        form.setLabelAlignment(_enum(Qt, "AlignmentFlag", "AlignRight") | _enum(Qt, "AlignmentFlag", "AlignVCenter"))
 
         self.speed = QDoubleSpinBox(self)
         self.speed.setRange(0.25, 20.0)
@@ -1338,7 +1333,7 @@ class ImageExportSettingsDialog(QDialog):
         form.setContentsMargins(4, 4, 4, 4)
         form.setHorizontalSpacing(4)
         form.setVerticalSpacing(4)
-        form.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        form.setLabelAlignment(_enum(Qt, "AlignmentFlag", "AlignRight") | _enum(Qt, "AlignmentFlag", "AlignVCenter"))
 
         self.image_format = QComboBox(self)
         self.image_format.addItems(self.FORMATS.keys())
@@ -1404,16 +1399,10 @@ class TrackViewer3DDialog(QDialog):
         self.layer = layer
         self.iface = iface
         self.setAcceptDrops(True)
-        try:
-            window_controls = (Qt.WindowSystemMenuHint |
-                               Qt.WindowMinimizeButtonHint |
-                               Qt.WindowMaximizeButtonHint |
-                               Qt.WindowCloseButtonHint)
-        except AttributeError:  # PyQt6 / QGIS 4 scoped enums
-            window_controls = (Qt.WindowType.WindowSystemMenuHint |
-                               Qt.WindowType.WindowMinimizeButtonHint |
-                               Qt.WindowType.WindowMaximizeButtonHint |
-                               Qt.WindowType.WindowCloseButtonHint)
+        window_controls = (_enum(Qt, "WindowType", "WindowSystemMenuHint") |
+                           _enum(Qt, "WindowType", "WindowMinimizeButtonHint") |
+                           _enum(Qt, "WindowType", "WindowMaximizeButtonHint") |
+                           _enum(Qt, "WindowType", "WindowCloseButtonHint"))
         self.setWindowFlags(self.windowFlags() | window_controls)
         self.setWindowTitle(title)
         self.resize(820, 540)
@@ -1425,7 +1414,7 @@ class TrackViewer3DDialog(QDialog):
 
         # Native toolbar inherits the active QGIS theme.
         toolbar = QFrame(self)
-        toolbar.setFrameShape(QFrame.StyledPanel)
+        toolbar.setFrameShape(_enum(QFrame, "Shape", "StyledPanel"))
         toolbar.setMaximumHeight(40)
         top_bar = QHBoxLayout(toolbar)
         top_bar.setContentsMargins(8, 3, 8, 3)
@@ -1435,7 +1424,7 @@ class TrackViewer3DDialog(QDialog):
 
         self.layer_combo = QComboBox(toolbar)
         self.layer_combo.setToolTip(tr("Switch currently displayed track layer"))
-        self.layer_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        self.layer_combo.setSizePolicy(_enum(QSizePolicy, "Policy", "Fixed"), _enum(QSizePolicy, "Policy", "Preferred"))
         self.layer_combo.setFixedWidth(200)
         self._populate_layer_combo()
         self.layer_combo.currentIndexChanged.connect(self._on_layer_changed)
@@ -1465,10 +1454,7 @@ class TrackViewer3DDialog(QDialog):
             button.setToolTip(tooltip)
             button.setAccessibleName(tooltip)
             button.setFixedSize(28, 28)
-            try:
-                button.setFocusPolicy(Qt.NoFocus)
-            except AttributeError:
-                button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            button.setFocusPolicy(_enum(Qt, "FocusPolicy", "NoFocus"))
             button.setEnabled(False)
             button.clicked.connect(
                 lambda _checked=False, command=script: self._invoke_view_command(command))
@@ -1564,14 +1550,9 @@ class TrackViewer3DDialog(QDialog):
         if os.path.exists(export_qgis_icon):
             white_pixmap = QPixmap(export_qgis_icon)
             import_icon = QIcon()
-            try:
-                icon_modes = (QIcon.Normal, QIcon.Disabled,
-                              QIcon.Active, QIcon.Selected)
-                icon_off, icon_on = QIcon.Off, QIcon.On
-            except AttributeError:
-                icon_modes = (QIcon.Mode.Normal, QIcon.Mode.Disabled,
-                              QIcon.Mode.Active, QIcon.Mode.Selected)
-                icon_off, icon_on = QIcon.State.Off, QIcon.State.On
+            icon_modes = (_enum(QIcon, "Mode", "Normal"), _enum(QIcon, "Mode", "Disabled"),
+                          _enum(QIcon, "Mode", "Active"), _enum(QIcon, "Mode", "Selected"))
+            icon_off, icon_on = _enum(QIcon, "State", "Off"), _enum(QIcon, "State", "On")
             for mode in icon_modes:
                 import_icon.addPixmap(white_pixmap, mode, icon_off)
                 import_icon.addPixmap(white_pixmap, mode, icon_on)
@@ -1618,26 +1599,18 @@ class TrackViewer3DDialog(QDialog):
             except (AttributeError, RuntimeError) as error:
                 QgsMessageLog.logMessage(
                     f"Unable to apply hardened web-view settings: {error}",
-                    "3D Track Viewer", Qgis.Warning)
+                    "3D Track Viewer", _enum(Qgis, "MessageLevel", "Warning"))
             self.web_view.loadFinished.connect(self._on_view_loaded)
             self.web_view.load(QUrl.fromLocalFile(html_path))
             layout.addWidget(self.web_view)
         elif html_path:
             info_label = QLabel(tr("Embedded 3D is not supported in current QGIS environment. Opened in system browser."))
-            try:
-                center_alignment = Qt.AlignCenter
-            except AttributeError:
-                center_alignment = Qt.AlignmentFlag.AlignCenter
-            info_label.setAlignment(center_alignment)
+            info_label.setAlignment(_enum(Qt, "AlignmentFlag", "AlignCenter"))
             layout.addWidget(info_label)
         else:
             empty_label = QLabel(
                 tr("Select a QGIS layer or open a local GPX file from the upper-left toolbar."))
-            try:
-                center_alignment = Qt.AlignCenter
-            except AttributeError:
-                center_alignment = Qt.AlignmentFlag.AlignCenter
-            empty_label.setAlignment(center_alignment)
+            empty_label.setAlignment(_enum(Qt, "AlignmentFlag", "AlignCenter"))
             empty_label.setStyleSheet("color: palette(mid); font-size: 12pt;")
             layout.addWidget(empty_label)
 
@@ -1684,7 +1657,7 @@ class TrackViewer3DDialog(QDialog):
         except OSError as error:
             QgsMessageLog.logMessage(
                 f"Unable to remove temporary viewer file: {error}",
-                "3D Track Viewer", Qgis.Warning)
+                "3D Track Viewer", _enum(Qgis, "MessageLevel", "Warning"))
         super().closeEvent(event)
 
     def _on_view_loaded(self, ok):
@@ -1712,7 +1685,7 @@ class TrackViewer3DDialog(QDialog):
         except (AttributeError, RuntimeError) as error:
             QgsMessageLog.logMessage(
                 f"3D view command failed: {error}",
-                "3D Track Viewer", Qgis.Warning)
+                "3D Track Viewer", _enum(Qgis, "MessageLevel", "Warning"))
 
     def _toggle_time_clipping(self, enabled):
         if not HAS_WEBVIEW or not hasattr(self, "web_view"):
@@ -1747,10 +1720,7 @@ class TrackViewer3DDialog(QDialog):
         """Show native settings and synchronize accepted values to the view."""
         dialog = TrackViewerUnitSettingsDialog(self)
         result = dialog.exec()
-        try:
-            accepted = QDialog.Accepted
-        except AttributeError:
-            accepted = QDialog.DialogCode.Accepted
+        accepted = _enum(QDialog, "DialogCode", "Accepted")
         if result != accepted:
             return
 
@@ -1819,10 +1789,7 @@ class TrackViewer3DDialog(QDialog):
         source = self._viewport_pixmap()
         dialog = ImageExportSettingsDialog(source.width(), source.height(), self)
         result = dialog.exec()
-        try:
-            accepted = QDialog.Accepted
-        except AttributeError:
-            accepted = QDialog.DialogCode.Accepted
+        accepted = _enum(QDialog, "DialogCode", "Accepted")
         if result != accepted:
             return
 
@@ -1832,12 +1799,8 @@ class TrackViewer3DDialog(QDialog):
             tr("Export 3D Image"), tr(file_filter), extension)
         if not path:
             return
-        try:
-            ignore_aspect = Qt.IgnoreAspectRatio
-            smooth = Qt.SmoothTransformation
-        except AttributeError:
-            ignore_aspect = Qt.AspectRatioMode.IgnoreAspectRatio
-            smooth = Qt.TransformationMode.SmoothTransformation
+        ignore_aspect = _enum(Qt, "AspectRatioMode", "IgnoreAspectRatio")
+        smooth = _enum(Qt, "TransformationMode", "SmoothTransformation")
         output = source.scaled(
             dialog.width.value(), dialog.height.value(),
             ignore_aspect, smooth)
@@ -1872,10 +1835,7 @@ class TrackViewer3DDialog(QDialog):
 
         export_dialog = GifExportSettingsDialog(info.get("baseDuration", 0), self)
         result = export_dialog.exec()
-        try:
-            accepted = QDialog.Accepted
-        except AttributeError:
-            accepted = QDialog.DialogCode.Accepted
+        accepted = _enum(QDialog, "DialogCode", "Accepted")
         if result != accepted:
             return
         speed = export_dialog.speed.value()
@@ -1904,10 +1864,7 @@ class TrackViewer3DDialog(QDialog):
 
         progress = QProgressDialog(tr("Rendering GIF frames..."), tr("Cancel"), 0, frame_count, self)
         progress.setWindowTitle(tr("Export GIF"))
-        try:
-            progress.setWindowModality(Qt.WindowModal)
-        except AttributeError:
-            progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.setWindowModality(_enum(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         frames = []
         temporary_path = path + ".tmp"
@@ -1932,10 +1889,7 @@ class TrackViewer3DDialog(QDialog):
                 pixmap = self._viewport_pixmap()
                 encoded = QByteArray()
                 buffer = QBuffer(encoded)
-                try:
-                    write_only = QIODevice.WriteOnly
-                except AttributeError:
-                    write_only = QIODevice.OpenModeFlag.WriteOnly
+                write_only = _enum(QIODevice, "OpenModeFlag", "WriteOnly")
                 buffer.open(write_only)
                 if not pixmap.save(buffer, "PNG"):
                     raise RuntimeError(tr("Unable to capture an animation frame."))
@@ -1969,7 +1923,7 @@ class TrackViewer3DDialog(QDialog):
                 except (AttributeError, RuntimeError) as error:
                     QgsMessageLog.logMessage(
                         f"Unable to finalize animation export: {error}",
-                        "3D Track Viewer", Qgis.Warning)
+                        "3D Track Viewer", _enum(Qgis, "MessageLevel", "Warning"))
             progress.close()
             if os.path.exists(temporary_path):
                 try:
@@ -1977,7 +1931,7 @@ class TrackViewer3DDialog(QDialog):
                 except OSError as error:
                     QgsMessageLog.logMessage(
                         f"Unable to remove temporary GIF: {error}",
-                        "3D Track Viewer", Qgis.Warning)
+                        "3D Track Viewer", _enum(Qgis, "MessageLevel", "Warning"))
 
     def _export_svg(self):
         if not HAS_WEBVIEW or not hasattr(self, "web_view"):
@@ -2009,12 +1963,8 @@ class TrackViewer3DDialog(QDialog):
         if not renderer.isValid():
             QMessageBox.warning(self, tr("3D Track Viewer"), tr("Invalid vector scene, PDF export canceled."))
             return
-        try:
-            printer = QPrinter(QPrinter.HighResolution)
-            pdf_format = QPrinter.PdfFormat
-        except AttributeError:  # PyQt6 / QGIS 4 scoped enums
-            printer = QPrinter(QPrinter.PrinterMode.HighResolution)
-            pdf_format = QPrinter.OutputFormat.PdfFormat
+        printer = QPrinter(_enum(QPrinter, "PrinterMode", "HighResolution"))
+        pdf_format = _enum(QPrinter, "OutputFormat", "PdfFormat")
         printer.setOutputFormat(pdf_format)
         printer.setOutputFileName(path)
         try:
@@ -2170,8 +2120,6 @@ class TrackViewer3DDialog(QDialog):
                 f"{name} ({feature_count})"
                 for name, _layer, feature_count in available_layers
             ]
-            
-            from qgis.PyQt.QtWidgets import QInputDialog
             selected_display, ok = QInputDialog.getItem(
                 self,
                 tr("Import GPX Layer"),
@@ -2237,7 +2185,7 @@ def open_empty_3d_view(iface):
         except (AttributeError, RuntimeError) as error:
             QgsMessageLog.logMessage(
                 f"Unable to close the previous 3D viewer: {error}",
-                "3D Track Viewer", Qgis.Warning)
+                "3D Track Viewer", _enum(Qgis, "MessageLevel", "Warning"))
     _active_3d_dialog = TrackViewer3DDialog(
         "",
         title=tr("3D Track Viewer"),

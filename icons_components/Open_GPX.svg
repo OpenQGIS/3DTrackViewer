@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   sodipodi:docname="0_icons_3D_view.svg"
+   inkscape:export-batch-name=""
+   inkscape:export-batch-path="C:\Users\tesla\AppData\Roaming\QGIS\QGIS3\profiles\ForTest\python\plugins\3DTrackViewer\icons_components"
+   xml:space="preserve"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="6.1015626"
+     inkscape:cx="98.991036"
+     inkscape:cy="46.463508"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="41"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer2"><inkscape:page
+       x="0"
+       y="0"
+       width="32"
+       height="32"
+       id="page62"
+       margin="0"
+       bleed="0"
+       inkscape:label="Open_GPX" /></sodipodi:namedview><defs
+     id="defs1" /><g
+     inkscape:label="图层 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-756)"><path
+       d="m 760.59961,17.369141 a 4.1046539,4.1046539 0 1 0 0,8.208984 h 22.80273 a 1.368218,1.368218 0 0 1 0,2.736328 h -21.89062 v 2.736328 h 21.89062 a 4.104654,4.104654 0 0 0 0,-8.208984 h -22.80273 a 1.3682177,1.3682177 0 0 1 0,-2.736328 h 8.66406 v -2.736328 z"
+       style="fill:#80cc28;fill-opacity:1;stroke-width:0.195312"
+       id="path39" /><path
+       d="m 777.47461,0.94921875 -0.1875,0.001953 c -4.44762,0.0912151 -8.02344,3.45196685 -8.02344,7.58398445 a 6.6094038,6.6094038 0 0 0 0.006,0.2675781 c 0.10125,2.5074857 1.60062,5.3279257 4.0625,8.1874997 a 33.674575,33.674575 0 0 0 3.09766,3.140625 l 0.38867,0.337891 0.35742,0.304687 0.29688,0.244141 0.29882,-0.244141 0.35743,-0.304687 0.18945,-0.164063 0.40234,-0.357421 a 33.674575,33.674575 0 0 0 2.89453,-2.958985 c 2.46188,-2.858662 3.96125,-5.677148 4.0625,-8.1855467 l 0.006,-0.2675781 c 0,-4.1894827 -3.67561,-7.58593758 -8.20898,-7.58593758 z m 0,5.47265625 a 2.7364355,2.7364355 0 0 1 0,5.472656 2.7364355,2.7364355 0 1 1 0,-5.472656 z"
+       id="path28"
+       style="fill:#000000;fill-opacity:1;stroke:none" /></g></svg>

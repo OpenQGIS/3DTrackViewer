@@ -1,0 +1,61 @@
+[general]
+name=3D Track Viewer
+description=适用于QGIS 3和QGIS 4的三维轨迹分析工具，支持工程点线图层、本地GPX、时间裁剪、关键帧动画，以及可配置格式、分辨率和动画参数的多格式导出。 / 3D track analysis for QGIS 3 and QGIS 4 with project layers, local GPX, time clipping, keyframe animation, and multi-format export with configurable image format, resolution and animation settings.
+version=1.2.3
+qgisMinimumVersion=3.1
+qgisMaximumVersion=4.99
+author=OpenQGIS
+email=OpenQGIS@outlook.com
+about=直接在QGIS面板中选择工程点线图层或打开本地GPX轨迹，以交互式三维视图展示高程、速度和坡度变化。支持QGIS 3/4与Qt 5/6、垂直夸张、轨迹样式、色阶范围、时间裁剪、跟随显示、原生单位设置、相机关键帧动画、可配置格式与分辨率的栅格图片导出，以及SVG、PDF和可配置GIF导出。 / Select project point/line layers or open local GPX tracks directly in the QGIS panel and inspect elevation, speed and slope in an interactive 3D view. Supports QGIS 3/4 and Qt 5/6, vertical exaggeration, track styling, color ranges, time clipping, follow display, native unit settings, camera keyframes, raster image export with configurable format and resolution, plus SVG, PDF and configurable GIF export.
+tracker=
+repository=
+tags=GPX,3D,track,elevation,speed,slope,animation,Analysis,i18n,Qt6,QGIS4
+homepage=
+category=Analysis
+icon=icons/icon.png
+changelog=
+  Version 1.2.3:
+
+  - ⚙️ 优化【轨迹分析单位设置】、【3D视图导出为图片】与【导出为GIF动画】弹窗布局，页面宽度缩减50%（180-200px），输入框收紧至1/3宽度，文本右对齐并缩小字号。 / Compacted unit settings, 3D image export and GIF export dialogs to 50% width (180-200px) with 1/3-width inputs, right-aligned labels and compact typography.
+  - 🛠️ 调整工具栏按钮顺序（跟随显示在关键帧右侧，设置在跟随显示右侧），将原生Qt工具栏图标统一设为20x20px（按钮28x28px），并规范各导出按钮悬停提示。 / Reordered toolbar buttons (follow display after keyframe, settings after follow display), unified Qt toolbar icon size to 20x20px (28x28px button), and refined export tooltips.
+  - 📍 升级鼠标跟随显示悬停窗口，首行自动展示GPX文件名或QGIS图层名，并优化各数据行字号与垂直间距。 / Upgraded mouse-follow tooltip to display GPX filename or QGIS layer name on the first line with compact row spacing and font sizing.
+
+  Version 1.2.2:
+
+  - 🧭 优化右下角三维坐标指示器尺寸与布局，确保任意极限视角下立方体距框架至少2px，框架距角度输入框2px。 / Optimized the bottom-right 3D orientation indicator so the cube retains at least 2px clearance from its frame at every extreme view, with a 2px gap from the frame to the angle inputs.
+  - 🖱️ 调整鼠标跟随信息窗口排版，标题保持加粗，时间、高程、速度和坡度及其数值使用不加粗的10px CSS字号（150%缩放下约15屏幕像素）。 / Refined the mouse-follow tooltip: the title remains bold while time, elevation, speed, slope and their values use a regular 10px CSS font (about 15 screen pixels at 150% scaling).
+
+  Version 1.2.1:
+
+  - ⚙️ 移除左侧面板中的重复设置入口，仅保留顶部工具栏设置按钮，并改用Setting.svg图标。 / Removed the duplicate settings entry from the left panel, retained the top-toolbar button, and switched it to the Setting.svg icon.
+  - 🎞️ 重新设计GIF导出设置，支持调整动画倍数与每秒帧数，并实时联动显示动画时长和总帧数。 / Redesigned GIF export settings with adjustable animation speed and FPS plus live duration and total-frame summaries.
+  - 🖼️ 扩展栅格图片导出，支持PNG、JPEG和BMP格式、自定义输出分辨率及可选宽高比锁定。 / Expanded raster image export with PNG, JPEG and BMP formats, custom output resolution, and optional aspect-ratio locking.
+
+  Version 1.2.0:
+
+  - 🔧 新增QGIS 4与Qt 6兼容支持，同时保持QGIS 3与Qt 5兼容。 / Added QGIS 4 and Qt 6 compatibility while retaining QGIS 3 and Qt 5 support.
+  - 🎛️ 重构插件入口与原生工具栏，可在面板内选择QGIS图层、打开或拖入本地GPX。 / Reworked the plugin entry and native toolbar to select QGIS layers and open or drop local GPX files inside the panel.
+  - ⏱️ 修复时间裁剪与关键帧播放，空关键帧播放时自动创建裁剪区间起止关键帧。 / Fixed time clipping and keyframe playback, including automatic start/end keyframes for an empty timeline.
+  - ⚙️ 将单位与悬浮信息设置改为QGIS原生弹窗，并统一工具栏按钮、交互图标与折叠面板行为。 / Replaced embedded unit settings with a native QGIS dialog and unified toolbar buttons, interaction indicators and collapsed-panel behavior.
+
+  Version 1.1.0:
+
+  - 🌐 新增全语言国际化（i18n）支持，内置 12 种语言翻译包（.ts/.qm）及完整深层 Fallback 机制。 / Added full multi-language i18n translation support with 12 language bundles (.ts/.qm) and complete deep fallback logic.
+  - 🎨 优化三维视口工具栏 UI，调整按钮尺寸为 28x28px、图标尺寸为 24x24px，并使用 Export_to_QGIS 原生 SVG 图标。 / Optimized 3D viewer toolbar UI with 28x28px buttons, 24x24px icons and native Export_to_QGIS SVG icon.
+  - 📖 升级 README 官方文档，嵌入 3 项动图预览（高程、坡度、速度）、SVG 操作图标并新增完整英文双语说明。 / Upgraded official README documentation with 3 GIF animation previews, SVG component icons and complete bilingual support.
+  - 🐛 修复 Qt 模块 QLocale 导入漏项及弹窗提示的深层本地化翻译问题。 / Fixed missing Qt module QLocale import and deep popup prompt localization.
+
+  Version 1.0.1:
+
+  - 🔧 更新三维渲染依赖为插件本地固定版本，移除运行时远程脚本加载。 / Updated 3D rendering dependencies to fixed local copies and removed runtime remote script loading.
+  - 🐛 修复图层名称及轨迹属性写入三维视图时的内容注入风险。 / Fixed content-injection risks when writing layer names and track attributes into the 3D view.
+  - 🔧 更新临时轨迹文件为唯一命名并在窗口关闭后自动清理。 / Updated temporary track documents with unique names and automatic cleanup when the viewer closes.
+  - ⚡ 新增GPX文件、轨迹要素、轨迹线段及GIF内存安全限制，并优化高程平滑处理性能。 / Added safety limits for GPX files, track features, track segments and GIF memory while optimizing elevation smoothing performance.
+
+  Version 1.0.0:
+
+  - ✨ 新增QGIS工程点线图层及本地GPX文件的三维轨迹查看。 / Added 3D track visualization for QGIS project point/line layers and local GPX files.
+  - ✨ 新增高程、速度和坡度着色，并支持垂直夸张、轨迹粗细、色阶范围及渐变设置。 / Added elevation, speed and slope coloring with controls for vertical exaggeration, track width, color range and gradients.
+  - ✨ 新增轨迹时间裁剪、跟随显示及相机关键帧动画。 / Added track time clipping, follow display and camera keyframe animation.
+  - ✨ 新增PNG图片、SVG矢量图、PDF文档及GIF动画导出。 / Added PNG image, SVG vector, PDF document and GIF animation export.
+  - 🚀 支持在三维窗口中切换工程图层，并将临时GPX轨迹导入当前QGIS工程。 / Added project-layer switching in the 3D viewer and importing temporary GPX tracks into the current QGIS project.

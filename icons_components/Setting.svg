@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   sodipodi:docname="0_icons_3D_view.svg"
+   inkscape:export-batch-name=""
+   inkscape:export-batch-path="C:\Users\tesla\AppData\Roaming\QGIS\QGIS3\profiles\ForTest\python\plugins\3DTrackViewer\icons_components"
+   xml:space="preserve"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="6.1015626"
+     inkscape:cx="98.991036"
+     inkscape:cy="46.463508"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="41"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer2"><inkscape:page
+       x="0"
+       y="0"
+       width="32"
+       height="32"
+       id="page39"
+       margin="0"
+       bleed="0"
+       inkscape:label="Setting" /></sodipodi:namedview><defs
+     id="defs1" /><g
+     inkscape:label="图层 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-798)"><path
+       d="m 825.0317,17.456297 c 0.0616,-0.474581 0.10144,-0.949132 0.10144,-1.456281 0,-0.503542 -0.0471,-0.978122 -0.10144,-1.456282 l 3.12993,-2.448869 c 0.28257,-0.221005 0.35865,-0.62311 0.17752,-0.949161 l -2.9669,-5.1332083 C 825.19473,5.6865031 824.79262,5.5669343 824.4666,5.6865031 l -3.69506,1.4852428 C 819.99993,6.577655 819.16673,6.0886083 818.26472,5.7154648 L 817.69959,1.781324 c -0.047,-0.3586199 -0.355,-0.6230817 -0.72812,-0.6230817 h -5.93745 c -0.36951,0 -0.6811,0.2680711 -0.72816,0.6230817 l -0.56512,3.9341408 c -0.90565,0.3695051 -1.73521,0.8766846 -2.50683,1.4562811 L 803.53885,5.686474 c -0.34413,-0.1340351 -0.72812,0 -0.90564,0.3260508 l -2.96688,5.1332082 c -0.19559,0.326022 -0.1014,0.728127 0.17752,0.949132 l 3.12993,2.448869 c -0.0616,0.474551 -0.10144,0.963596 -0.10144,1.456282 0,0.492655 0.0471,0.978091 0.10144,1.456281 l -3.13353,2.448868 c -0.2826,0.220976 -0.35866,0.623082 -0.17753,0.949103 l 2.96691,5.133208 c 0.17749,0.326055 0.57962,0.445595 0.90564,0.326055 l 3.69506,-1.485305 c 0.77161,0.594124 1.60479,1.083198 2.50682,1.456307 l 0.5651,3.934149 c 0.0471,0.355008 0.35504,0.623076 0.72816,0.623076 h 5.93742 c 0.36951,0 0.68106,-0.268068 0.72815,-0.623076 l 0.56511,-3.934149 c 0.90564,-0.369507 1.73524,-0.876682 2.50684,-1.456279 l 3.69506,1.485277 c 0.34413,0.13403 0.72813,0 0.90563,-0.326055 l 2.96689,-5.133208 c 0.17753,-0.326021 0.10144,-0.728127 -0.17749,-0.949103 z m -11.02714,3.742125 c -2.86547,0 -5.19479,-2.329329 -5.19479,-5.194798 0,-2.865469 2.32932,-5.194798 5.19479,-5.194797 2.86547,0 5.1948,2.329328 5.1948,5.194797 0,2.865469 -2.32933,5.194798 -5.1948,5.194798 z m 0,0"
+       fill="#515151"
+       p-id="5246"
+       id="path1-8"
+       style="fill:#000000;fill-opacity:1;stroke-width:0.195312" /></g></svg>

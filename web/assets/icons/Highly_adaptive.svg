@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   sodipodi:docname="0_icons_3D_view.svg"
+   inkscape:export-batch-name=""
+   inkscape:export-batch-path="C:\Users\tesla\AppData\Roaming\QGIS\QGIS3\profiles\ForTest\python\plugins\ColorGPX\icons_Component\icons_3D_view"
+   xml:space="preserve"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="4.3144562"
+     inkscape:cx="82.745075"
+     inkscape:cy="-7.9963727"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="41"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"><inkscape:page
+       x="0"
+       y="0"
+       width="32"
+       height="32"
+       id="page18"
+       margin="0"
+       bleed="0"
+       inkscape:label="Highly_adaptive" /></sodipodi:namedview><defs
+     id="defs1" /><g
+     inkscape:label="图层 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-378)"><path
+       d="m 381.68729,1.67293 v 0.77653 h 2.70465 v 2.1045 h -2.70465 v 4.02195 h 4.05681 v 2.10371 h -4.05681 v 3.98453 h 4.05681 v 2.10371 h -4.05681 v 3.98533 h 4.05681 v 2.10371 h -4.05681 v 4.13847 h 4.05681 v 2.1045 h -4.05681 v 1.22052 H 379.4341 V 1.67293 Z m 26.40112,28.65335 h -20.94566 v -2.10371 h 20.94566 v 2.1045 z m 0.36199,-4.30436 c 0.0699,-0.19341 0.10953,-0.41851 0.11494,-0.65077 0.005,-0.2321 -0.0239,-0.46261 -0.0847,-0.66621 L 402.49332,2.73378 c -0.0529,-0.20377 -0.13387,-0.3784 -0.23512,-0.50591 -0.10109,-0.12735 -0.21857,-0.2036 -0.34083,-0.22048 -0.12146,-0.0314 -0.24515,-0.003 -0.35881,0.0815 -0.11366,0.0849 -0.21316,0.22318 -0.28846,0.40148 l -6.7874,15.26 -1.96585,-5.84707 c -0.0629,-0.20535 -0.15521,-0.37441 -0.26696,-0.48903 -0.11175,-0.11446 -0.23863,-0.1697 -0.3663,-0.15951 -0.12687,-0.008 -0.25247,0.0482 -0.36311,0.16237 -0.11064,0.11462 -0.20217,0.28257 -0.26474,0.48617 l -4.2316,12.72172 h -9.5e-4 c -0.0699,0.20217 -0.10698,0.43666 -0.10714,0.67624 -1.5e-4,0.23958 0.0366,0.47423 0.10602,0.67672 0.14073,0.4591 0.35388,0.69057 0.64074,0.69057 h 8.44697 c 0.0223,0.001 0.0447,0.001 0.067,0 h 11.64782 c 0.12623,0.008 0.2512,-0.0482 0.36152,-0.1619 0.11032,-0.1135 0.20153,-0.28049 0.26425,-0.48267 z"
+       p-id="21421"
+       id="path1-4"
+       style="stroke-width:0.195312" /></g></svg>

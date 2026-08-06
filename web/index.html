@@ -1,0 +1,2936 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Track Viewer</title>
+    <style>
+        :root {
+            --window: #f0f0f0;
+            --base: #ffffff;
+            --text: #202020;
+            --muted: #606060;
+            --border: #b8b8b8;
+            --button: #f5f5f5;
+            --accent: #0066cc;
+            --accent-text: #ffffff;
+            --grid: #888888;
+            --font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+            --font-size: 9pt;
+            --control-radius: 5px;
+            --control-height: 28px;
+            --panel-gutter: 10px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-family), "Microsoft YaHei UI", sans-serif;
+            font-size: var(--font-size);
+            background-color: var(--window);
+            color: var(--text);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+        /* Left Separated Parameter Panel */
+        .sidebar {
+            width: 192px;
+            min-width: 192px;
+            height: 100%;
+            position: relative;
+            background: var(--button);
+            border-right: 1px solid var(--border);
+            padding: 10px var(--panel-gutter) 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            z-index: 100;
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            font-size: 1em;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            min-height: 30px;
+            padding-bottom: 8px;
+            margin-bottom: 0;
+        }
+        .sidebar-toggle {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            background: var(--button);
+            color: var(--text);
+            font: bold 15px/20px var(--font-family), sans-serif;
+            cursor: pointer;
+            flex: 0 0 24px;
+        }
+        .sidebar-toggle img {
+            display: block;
+            width: 16px;
+            height: 16px;
+            margin: auto;
+            pointer-events: none;
+        }
+        .sidebar-toggle:hover {
+            border-color: var(--accent);
+            background: var(--base);
+        }
+        .sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            gap: 0;
+            overflow: visible;
+            border-right: 0;
+            background: transparent;
+        }
+        .sidebar.collapsed h2 {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 24px;
+            z-index: 180;
+            justify-content: center;
+            border-bottom: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar.collapsed .panel-title,
+        .sidebar.collapsed .control-group,
+        .sidebar.collapsed .btn,
+        .sidebar.collapsed .legend-box {
+            display: none;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: normal;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .value-editor {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--muted);
+            font-weight: normal;
+        }
+        select, input[type="range"] {
+            width: 100%;
+        }
+        select {
+            background: var(--base);
+            color: var(--text);
+            border: 1px solid var(--border);
+            height: var(--control-height);
+            padding: 3px 7px;
+            border-radius: var(--control-radius);
+            font: inherit;
+            outline: none;
+            cursor: pointer;
+        }
+        select:hover {
+            border-color: var(--accent);
+        }
+        select:focus, input[type="number"]:focus, input[type="color"]:focus {
+            border-color: var(--accent);
+            outline: 1px solid var(--accent);
+            outline-offset: 1px;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 18px;
+            border-radius: 5px;
+            background: var(--accent);
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+        input[type="number"] {
+            width: 60px;
+            height: 26px;
+            padding: 2px 5px;
+            background: var(--base);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font: inherit;
+            font-family: Consolas, "Cascadia Mono", monospace;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            outline: none;
+        }
+        .button-stack {
+            display: flex;
+            gap: 6px;
+            padding: 10px 0 0;
+            align-items: stretch;
+            justify-content: center;
+            text-align: center;
+        }
+        .button-stack .btn { flex: 1 1 0; }
+        .btn {
+            width: 100%;
+            background: var(--button);
+            color: var(--text);
+            border: 1px solid var(--border);
+            min-height: var(--control-height);
+            padding: 4px 9px;
+            border-radius: 8px;
+            font: inherit;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            line-height: 1;
+            gap: 6px;
+            white-space: nowrap;
+            transition: border-color 80ms ease, background-color 80ms ease;
+        }
+        .btn:hover {
+            border-color: var(--accent);
+            background: var(--base);
+        }
+        .btn:focus {
+            outline: 1px solid var(--accent);
+            outline-offset: 1px;
+        }
+        .btn:active {
+            background: var(--border);
+        }
+        .btn-green {
+            background: var(--button);
+            color: var(--text);
+        }
+        .btn-green:hover {
+            background: var(--base);
+        }
+        .gradient-toggle[aria-pressed="true"] {
+            border-color: #1976d2;
+            color: #ffffff;
+            background: #1976d2;
+        }
+        .gradient-toggle[aria-pressed="false"] {
+            border-color: var(--border);
+            color: var(--text);
+            background: #dedede;
+        }
+        .legend-toggle[aria-pressed="true"] {
+            border-color: #1976d2;
+            color: #ffffff;
+            background: #1976d2;
+        }
+        .legend-toggle[aria-pressed="false"] {
+            border-color: var(--border);
+            color: var(--text);
+            background: #dedede;
+        }
+        .axis-toggle[aria-pressed="true"] {
+            border-color: #1976d2;
+            color: #ffffff;
+            background: #1976d2;
+        }
+        .axis-toggle[aria-pressed="false"] {
+            border-color: var(--border);
+            color: var(--text);
+            background: #dedede;
+        }
+        .gradient-toggle,
+        .legend-toggle,
+        .axis-toggle {
+            border: 1px solid #707070;
+            height: 28px;
+            min-height: 28px;
+            padding: 0 8px;
+            line-height: normal;
+            text-align: center;
+            vertical-align: middle;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+            -webkit-appearance: none;
+        }
+
+        /* Legend Bar */
+        .legend-box {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+        .legend-bar {
+            height: 12px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #0000ff 0%, #00ffff 25%, #00ff00 50%, #ffff00 75%, #ff0000 100%);
+            margin: 8px 0;
+            border: 1px solid var(--border);
+        }
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .legend-labels input {
+            width: 100%;
+            height: 22px;
+            box-sizing: border-box;
+            padding: 1px 29px 1px 4px;
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            background: var(--base);
+            color: var(--text);
+            font: inherit;
+            font-family: Consolas, "Cascadia Mono", monospace;
+            font-variant-numeric: tabular-nums;
+        }
+        .legend-labels input[type="number"]::-webkit-inner-spin-button,
+        .legend-labels input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .legend-value {
+            position: relative;
+            width: 78px;
+        }
+        .legend-value span {
+            position: absolute;
+            right: 4px;
+            top: 3px;
+            color: var(--muted);
+            font-size: 10px;
+            pointer-events: none;
+        }
+        .legend-title { display: flex; align-items: center; justify-content: space-between; }
+        .clamp-reset {
+            border: 0;
+            background: transparent;
+            color: var(--accent);
+            padding: 0 2px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .color-editors {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            margin-top: 9px;
+        }
+        .color-editors input[type="color"] {
+            width: 28px;
+            height: 24px;
+            padding: 1px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background: var(--button);
+            cursor: pointer;
+        }
+
+        /* Right Separated 3D Viewport Window */
+        .viewport {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            background-color: var(--base);
+            overflow: hidden;
+            min-width: 0;
+        }
+        .viewport-stage {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            overflow: hidden;
+        }
+        .viewport.time-clipping-active .viewport-stage { bottom: 64px; }
+        .viewport.time-clipping-active.animation-editing .viewport-stage { bottom: 148px; }
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #orientation-control {
+            position: absolute;
+            right: 54px;
+            bottom: 44px;
+            width: 104px;
+            height: 104px;
+            z-index: 150;
+        }
+        #orientation-control.hidden { display: none; }
+        #orientation-gizmo {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 104px;
+            height: 104px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            align-items: center;
+            text-align: center;
+            line-height: 1;
+            gap: 6px;
+            white-space: nowrap;
+            transition: border-color 80ms ease, background-color 80ms ease;
+        }
+        .btn:hover {
+            border-color: var(--accent);
+            background: var(--base);
+        }
+        .btn:focus {
+            outline: 1px solid var(--accent);
+            outline-offset: 1px;
+        }
+        .btn:active {
+            background: var(--border);
+        }
+        .btn-green {
+            background: var(--button);
+            color: var(--text);
+        }
+        .btn-green:hover {
+            background: var(--base);
+        }
+        .gradient-toggle[aria-pressed="true"] {
+            border-color: #1976d2;
+            color: #ffffff;
+            background: #1976d2;
+        }
+        .gradient-toggle[aria-pressed="false"] {
+            border-color: var(--border);
+            color: var(--text);
+            background: #dedede;
+        }
+        .legend-toggle[aria-pressed="true"] {
+            border-color: #1976d2;
+            color: #ffffff;
+            background: #1976d2;
+        }
+        .legend-toggle[aria-pressed="false"] {
+            border-color: var(--border);
+            color: var(--text);
+            background: #dedede;
+        }
+        .axis-toggle[aria-pressed="true"] {
+            border-color: #1976d2;
+            color: #ffffff;
+            background: #1976d2;
+        }
+        .axis-toggle[aria-pressed="false"] {
+            border-color: var(--border);
+            color: var(--text);
+            background: #dedede;
+        }
+        .gradient-toggle,
+        .legend-toggle,
+        .axis-toggle {
+            border: 1px solid #707070;
+            height: 28px;
+            min-height: 28px;
+            padding: 0 8px;
+            line-height: normal;
+            text-align: center;
+            vertical-align: middle;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+            -webkit-appearance: none;
+        }
+
+        /* Legend Bar */
+        .legend-box {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+        .legend-bar {
+            height: 12px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #0000ff 0%, #00ffff 25%, #00ff00 50%, #ffff00 75%, #ff0000 100%);
+            margin: 8px 0;
+            border: 1px solid var(--border);
+        }
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .legend-labels input {
+            width: 100%;
+            height: 22px;
+            box-sizing: border-box;
+            padding: 1px 29px 1px 4px;
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            background: var(--base);
+            color: var(--text);
+            font: inherit;
+            font-family: Consolas, "Cascadia Mono", monospace;
+            font-variant-numeric: tabular-nums;
+        }
+        .legend-labels input[type="number"]::-webkit-inner-spin-button,
+        .legend-labels input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .legend-value {
+            position: relative;
+            width: 78px;
+        }
+        .legend-value span {
+            position: absolute;
+            right: 4px;
+            top: 3px;
+            color: var(--muted);
+            font-size: 10px;
+            pointer-events: none;
+        }
+        .legend-title { display: flex; align-items: center; justify-content: space-between; }
+        .clamp-reset {
+            border: 0;
+            background: transparent;
+            color: var(--accent);
+            padding: 0 2px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .color-editors {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            margin-top: 9px;
+        }
+        .color-editors input[type="color"] {
+            width: 28px;
+            height: 24px;
+            padding: 1px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background: var(--button);
+            cursor: pointer;
+        }
+
+        /* Right Separated 3D Viewport Window */
+        .viewport {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            background-color: var(--base);
+            overflow: hidden;
+            min-width: 0;
+        }
+        .viewport-stage {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            overflow: hidden;
+        }
+        .viewport.time-clipping-active .viewport-stage { bottom: 64px; }
+        .viewport.time-clipping-active.animation-editing .viewport-stage { bottom: 148px; }
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #orientation-control {
+            position: absolute;
+            right: 54px;
+            bottom: 44px;
+            width: 104px;
+            height: 104px;
+            z-index: 150;
+        }
+        #orientation-control.hidden { display: none; }
+        #orientation-gizmo {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 104px;
+            height: 104px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: {gizmo_background};
+            pointer-events: auto;
+            cursor: default;
+        }
+        #azimuth-input {
+            position: absolute;
+            left: 34px;
+            top: 106px;
+        }
+        #elevation-input {
+            position: absolute;
+            left: 106px;
+            top: 40px;
+        }
+        #orientation-control input[type="number"] {
+            width: 36px;
+            height: 24px;
+            padding: 1px 3px;
+            text-align: center;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        #orientation-control input[type="number"]::-webkit-inner-spin-button,
+        #orientation-control input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        #animation-panel {
+            position: absolute;
+            left: 50%;
+            bottom: 14px;
+            width: 560px;
+            max-width: calc(100% - 210px);
+            transform: translateX(-50%);
+            padding: 7px 9px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--base);
+            color: var(--text);
+            z-index: 145;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        }
+        #animation-panel.hidden { display: none; }
+        #animation-panel button,
+        #animation-panel select,
+        #animation-panel input {
+            height: 26px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        #animation-panel button {
+            min-width: 30px;
+            padding: 2px 7px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background: var(--button);
+            color: var(--text);
+            cursor: pointer;
+        }
+        #color-range-mode {
+            width: 78px;
+            height: 24px;
+            padding: 1px 4px;
+            font-size: 11px;
+        }
+        .legend-labels input.range-readonly {
+            color: var(--muted);
+            background: var(--button);
+        }
+        #animation-panel .animation-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+            white-space: normal;
+            font-size: 10px;
+        }
+        #animation-panel .animation-row label { white-space: nowrap; }
+        #animation-panel .animation-row + .animation-row { margin-top: 6px; }
+        #animation-keyframe-list { width: 110px; }
+        #animation-speed {
+            width: 55px !important;
+            font-size: 10px;
+            height: 22px;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            background: var(--base);
+            color: var(--text);
+        }
+        #animation-duration {
+            width: 38px !important;
+            font-size: 10px;
+            height: 20px;
+            padding: 0 2px;
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            background: var(--base);
+            color: var(--text);
+            text-align: center;
+        }
+        #animation-status {
+            display: inline-block;
+            min-width: 90px;
+            margin-left: auto;
+            color: var(--muted);
+            text-align: right;
+        }
+        #animation-calculated-duration {
+            display: inline-block;
+            min-width: 58px;
+            margin-right: 4px;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+        }
+        /* Keep the timeline and keyframe editor in the page during capture so
+           the 3D viewport never changes size. The Python exporter crops only
+           .viewport-stage, therefore these controls are not written to GIF. */
+        body.animation-export #interaction-indicator,
+        body.animation-export #tooltip { display: none !important; }
+        /* Keep the same viewport geometry used while composing keyframes.
+           Expanding the stage after hiding the controls changes the camera
+           aspect ratio and makes exported GIF framing differ from preview. */
+        #interaction-indicator {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 28px;
+            height: 28px;
+            transform: translate(-50%, -50%) scale(0.92);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            z-index: 170;
+            transition: opacity 100ms ease, transform 100ms ease, visibility 100ms;
+        }
+        #interaction-indicator.visible {
+            opacity: 0.92;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #viewport-legend {
+            position: absolute;
+            left: 14px;
+            bottom: 14px;
+            width: 230px;
+            box-sizing: border-box;
+            padding: 8px 10px 7px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            background: var(--base);
+            pointer-events: none;
+            z-index: 145;
+        }
+        #viewport-legend.hidden { display: none; }
+        #time-range-control {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 64px;
+            padding: 6px 14px 8px;
+            border-top: 1px solid var(--border);
+            background: var(--button);
+            color: var(--text);
+        }
+        #time-range-control.active { display: block; }
+        .viewport.animation-editing #time-range-control { height: 148px; }
+        #time-range-control.unavailable { display: none; }
+        .time-range-labels {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 10px;
+            font-family: Consolas, "Cascadia Mono", monospace;
+            font-variant-numeric: tabular-nums;
+        }
+        .time-range-labels span {
+            max-width: 48%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .dual-time-range { position: relative; height: 20px; }
+        .dual-time-track {
+            position: absolute;
+            left: 7px;
+            right: 7px;
+            top: 8px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border);
+            overflow: hidden;
+        }
+        #time-range-fill {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1976d2;
+        }
+        .dual-time-range input[type="range"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 20px;
+            margin: 0;
+            background: transparent;
+            pointer-events: none;
+            -webkit-appearance: none;
+        }
+        .dual-time-range input[type="range"]::-webkit-slider-thumb {
+            pointer-events: auto;
+            width: 14px;
+            height: 18px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: #1976d2;
+            cursor: ew-resize;
+            -webkit-appearance: none;
+        }
+        #time-start-slider { z-index: 3; }
+        #time-end-slider { z-index: 2; }
+        #time-playhead-slider {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 22px;
+            margin: 0;
+            background: transparent;
+            z-index: 3;
+            -webkit-appearance: none;
+        }
+        #time-playhead-slider::-webkit-slider-runnable-track {
+            height: 3px;
+            background: transparent;
+        }
+        #time-playhead-slider::-webkit-slider-thumb {
+            width: 8px;
+            height: 22px;
+            margin-top: -10px;
+            border-radius: 2px;
+            background: #ff9800;
+            border-color: #e65100;
+            cursor: ew-resize;
+            -webkit-appearance: none;
+        }
+        .keyframe-range {
+            position: relative;
+            height: 22px;
+            margin-top: 4px;
+        }
+        .keyframe-range.hidden { display: none; }
+        .keyframe-range::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            right: 7px;
+            top: 9px;
+            height: 3px;
+            border-radius: 2px;
+            background: var(--border);
+            pointer-events: none;
+        }
+        #keyframe-markers {
+            position: absolute;
+            left: 7px;
+            right: 7px;
+            top: 0;
+            height: 22px;
+            pointer-events: none;
+            z-index: 5;
+        }
+        #keyframe-markers.hidden { display: none; }
+        #keyframe-playhead-line {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2px;
+            height: 22px;
+            margin-left: -1px;
+            background: #ff9800;
+            pointer-events: none;
+            z-index: 4;
+        }
+        #keyframe-playhead-line.hidden { display: none; }
+        .keyframe-marker {
+            position: absolute;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            margin-left: -5px;
+            transform: rotate(45deg);
+            background: #ff9800;
+            border: 1px solid #e65100;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        .keyframe-marker.inactive { background: var(--border); border-color: var(--muted); opacity: 0.55; }
+        #time-range-control #animation-panel {
+            position: static;
+            width: 100%;
+            max-width: none;
+            transform: none;
+            margin-top: 4px;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            background: transparent;
+        }
+        #time-range-control #animation-panel button {
+            min-width: 26px;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        .viewport-legend-title {
+            margin-bottom: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .viewport-legend-bar {
+            height: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+        }
+        .viewport-legend-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3px;
+            font-size: 10px;
+            color: var(--muted);
+            font-family: Consolas, "Cascadia Mono", monospace;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #tooltip {
+            position: absolute;
+            display: none;
+            background: var(--base);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: var(--text);
+            pointer-events: none;
+            z-index: 200;
+            line-height: 1.45;
+        }
+        #tooltip strong {
+            color: var(--accent);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .btn, #interaction-indicator { transition: none; }
+        }
+        /* Loading overlay styling */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--window);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .loading-box {
+            text-align: center;
+            padding: 30px;
+            background: var(--base);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 15px auto;
+            border: 4px solid var(--border);
+            border-top: 4px solid #1e88e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            color: var(--text);
+            font-size: 14px;
+            font-weight: bold;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Upload overlay styling */
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--window);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .upload-box {
+            width: 480px;
+            max-width: 90%;
+            background: var(--base);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .upload-box.hover {
+            border-color: var(--accent);
+            background: var(--button);
+            transform: scale(1.02);
+        }
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .upload-box h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: var(--text);
+            font-weight: bold;
+        }
+        .upload-box p {
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+        .upload-box button {
+            background-color: var(--accent);
+            color: var(--accent-text);
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .upload-box button:hover {
+            opacity: 0.9;
+        /* Web Toolbar Styling */
+        .web-toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 120px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            z-index: 150;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 6px;
+        }
+        .tool-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            height: 28px;
+            padding: 0 8px;
+            font-size: 11px;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+        }
+        .tool-btn:hover {
+            background: var(--button);
+            border-color: var(--border);
+        }
+        .tool-btn.active {
+            background-color: var(--accent);
+            color: var(--accent-text);
+            border-color: var(--accent);
+        }
+        .tool-sep {
+            width: 1px;
+            height: 18px;
+            background-color: var(--border);
+            margin: 0 4px;
+        }
+
+        /* Settings button and modal CSS */
+        .settings-btn {
+            position: static;
+            width: 100%;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            color: var(--text);
+            cursor: pointer;
+            padding: 0 12px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 160;
+            transition: all 0.15s ease;
+            justify-content: center;
+        }
+        .settings-btn:hover {
+            background: var(--button);
+            border-color: var(--border);
+        }
+        body[theme-dark="true"] .settings-btn {
+            background: rgba(40, 40, 40, 0.95);
+            border-color: #555;
+            color: #ddd;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            padding: 4px 6px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .btn, #interaction-indicator { transition: none; }
+        }
+        /* Loading overlay styling */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--window);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .loading-box {
+            text-align: center;
+            padding: 30px;
+            background: var(--base);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 15px auto;
+            border: 4px solid var(--border);
+            border-top: 4px solid #1e88e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            color: var(--text);
+            font-size: 14px;
+            font-weight: bold;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Upload overlay styling */
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--window);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .upload-box {
+            width: 480px;
+            max-width: 90%;
+            background: var(--base);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .upload-box.hover {
+            border-color: var(--accent);
+            background: var(--button);
+            transform: scale(1.02);
+        }
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .upload-box h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: var(--text);
+            font-weight: bold;
+        }
+        #tooltip {
+            position: absolute;
+            display: none;
+            background: var(--base);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 10px;
+            color: var(--text);
+            pointer-events: none;
+            z-index: 200;
+            line-height: 1.25;
+        }
+        #tooltip strong {
+            display: block;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            padding-bottom: 2px;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+            word-break: break-all;
+        }
+        #tooltip table {
+            font-size: 10px;
+            font-weight: normal;
+            line-height: 1.25;
+        }
+        #tooltip td {
+            padding: 1px 2px;
+            font-size: 10px;
+            font-weight: normal;
+        }
+        .upload-box p {
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+        .upload-box button {
+            background-color: var(--accent);
+            color: var(--accent-text);
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .upload-box button:hover {
+            opacity: 0.9;
+        /* Web Toolbar Styling */
+        .web-toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 120px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            z-index: 150;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 6px;
+        }
+        .tool-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            height: 28px;
+            padding: 0 8px;
+            font-size: 11px;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+        }
+        .tool-btn:hover {
+            background: var(--button);
+            border-color: var(--border);
+        }
+        .tool-btn.active {
+            background-color: var(--accent);
+            color: var(--accent-text);
+            border-color: var(--accent);
+        }
+        .tool-sep {
+            width: 1px;
+            height: 18px;
+            background-color: var(--border);
+            margin: 0 4px;
+        }
+
+        /* Settings button and modal CSS */
+        .settings-btn {
+            position: static;
+            width: 100%;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            color: var(--text);
+            cursor: pointer;
+            padding: 0 12px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 160;
+            transition: all 0.15s ease;
+            justify-content: center;
+        }
+        .settings-btn:hover {
+            background: var(--button);
+            border-color: var(--border);
+        }
+        body[theme-dark="true"] .settings-btn {
+            background: rgba(40, 40, 40, 0.95);
+            border-color: #555;
+            color: #ddd;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-box {
+            background: var(--base);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 160px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--button);
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 10px;
+            color: var(--text);
+        }
+        .modal-close {
+            background: transparent;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            color: var(--muted);
+        }
+        .modal-close:hover {
+            color: var(--text);
+        }
+        .modal-body {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .setting-item label {
+            font-size: 9.5px;
+            font-weight: bold;
+            color: var(--text);
+        }
+        .setting-item select {
+            width: 33.3%;
+            min-width: 50px;
+            height: 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--control-radius);
+            padding: 0 2px;
+            background: var(--base);
+            color: var(--text);
+            font-size: 9.5px;
+        }
+        .modal-footer {
+            padding: 10px 15px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            background: var(--button);
+        }
+        .btn-save {
+            background-color: var(--accent) !important;
+            color: var(--accent-text) !important;
+            font-weight: bold;
+        }
+    </style>
+
+    <link rel="stylesheet" href="web.css">
+
+    <!-- Three.js and OrbitControls -->
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/OrbitControls.js"></script>
+</head>
+<body>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-box">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">轨迹渲染中，请稍候...</div>
+        </div>
+    </div>
+
+    <!-- Drag-and-drop GPX file upload overlay for standalone web app -->
+    <div id="upload-overlay" class="upload-overlay">
+        <div id="upload-box" class="upload-box">
+            <div class="upload-icon">🏔️</div>
+            <h2>3D Track Viewer</h2>
+            <p>拖拽 GPX 轨迹文件到此处，或点击选择文件</p>
+            <input type="file" id="gpx-file-input" accept=".gpx" style="display:none">
+            <button type="button" class="btn" onclick="document.getElementById('gpx-file-input').click()">选择文件</button>
+        </div>
+    </div>
+
+    <!-- Left Separated Control Sidebar -->
+    <div class="sidebar">
+        <h2>
+            <span class="panel-title">显示设置</span>
+            <button class="sidebar-toggle" id="sidebar-toggle" title="收起设置面板" aria-label="收起设置面板"><img id="sidebar-toggle-icon" src="" alt=""></button>
+        </h2>
+        
+        <div class="control-group">
+            <label>渲染字段</label>
+            <select id="field-select">
+                <option value="speed">速度 (Speed)</option>
+                <option value="elevation">海拔 (Elevation)</option>
+                <option value="slope">坡度 (Slope)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>
+                <span>垂直夸张系数</span>
+                <span class="value-editor">
+                <input type="number" id="exag-input" min="1" max="30" step="0.5" value="1.0" aria-label="垂直夸张系数">
+                    <span>x</span>
+                </span>
+            </label>
+            <input type="range" id="exag-slider" min="1" max="30" step="0.5" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <label>
+                <span>轨迹粗细</span>
+                <span class="value-editor">
+                <input type="number" id="width-input" min="1" max="20" step="1" value="4" aria-label="轨迹粗细">
+                    <span>px</span>
+                </span>
+            </label>
+            <input type="range" id="width-slider" min="1" max="20" step="1" value="4">
+        </div>
+
+        <div class="button-stack">
+            <button type="button" class="btn legend-toggle" id="legend-toggle" aria-pressed="true" title="开启或关闭视口左下角图例">图例：开</button>
+            <button type="button" class="btn axis-toggle" id="axis-toggle" aria-pressed="true" title="开启或关闭右下角坐标轴指示器">坐标轴：开</button>
+        </div>
+
+        <div class="legend-box">
+            <div class="legend-title">
+                <label style="font-size: 13px; font-weight: 600; color: theme.text;">数值色阶</label>
+                <select id="color-range-mode" title="选择图例色阶范围模式" aria-label="色阶范围模式">
+                    <option value="auto">自动</option>
+                    <option value="clip">裁剪锁定</option>
+                    <option value="manual">手动</option>
+                </select>
+            </div>
+            <div class="legend-bar"></div>
+            <div class="legend-labels">
+                <div class="legend-value"><input type="number" id="min-val" step="any" value="0" aria-label="色阶最小值" title="小于此值的轨迹使用最小值颜色"><span id="min-unit"></span></div>
+                <div class="legend-value"><input type="number" id="max-val" step="any" value="100" aria-label="色阶最大值" title="大于此值的轨迹使用最大值颜色"><span id="max-unit"></span></div>
+            </div>
+            <div class="color-editors" title="点击色块编辑色带">
+                <input class="color-stop" type="color" value="#0000ff" aria-label="色带颜色 1">
+                <input class="color-stop" type="color" value="#00ffff" aria-label="色带颜色 2">
+                <input class="color-stop" type="color" value="#00ff00" aria-label="色带颜色 3">
+                <input class="color-stop" type="color" value="#ffff00" aria-label="色带颜色 4">
+                <input class="color-stop" type="color" value="#ff0000" aria-label="色带颜色 5">
+            </div>
+        </div>
+        <div class="button-stack">
+            <button type="button" class="btn gradient-toggle" id="gradient-toggle" aria-pressed="false" title="开启或关闭线段起终点及垂帘横向渐变">渐变：关</button>
+        </div>
+    </div>
+
+    <!-- Right Separated 3D Viewport Window -->
+    <div class="viewport">
+        <div class="viewport-stage">
+            <!-- Standalone Web App Toolbar -->
+            <div id="web-toolbar" class="web-toolbar" style="display:none">
+                <button type="button" class="tool-btn" id="web-open-track-btn" onclick="openFileDialog()" title="打开 GPX 轨迹文件">📂 打开轨迹</button>
+                <span class="tool-sep"></span>
+                <button type="button" class="tool-btn" onclick="fitZScale()" title="Z值自适应缩放">🏔️ 自适应高度</button>
+                <button type="button" class="tool-btn" onclick="zoomToVisibleLayer()" title="缩放到图层范围">🔍 缩放至轨迹</button>
+                <button type="button" class="tool-btn" onclick="resetActiveCamera()" title="重置相机视角">🔄 重置视角</button>
+                <span class="tool-sep"></span>
+                <button type="button" class="tool-btn toggle-btn" id="web-time-clip-btn" onclick="toggleWebTimeClipping()" title="开启时间裁剪">✂️ 时间裁剪</button>
+                <button type="button" class="tool-btn toggle-btn" id="web-animation-btn" onclick="toggleWebAnimation()" title="开启关键帧动画">🎬 关键帧动画</button>
+                <button type="button" class="tool-btn toggle-btn" id="web-follow-btn" onclick="toggleWebFollow()" title="开启跟随显示">👤 跟随显示</button>
+                <button type="button" class="tool-btn" id="web-settings-btn" onclick="openSettingsModal()" title="设置">⚙️ 设置</button>
+                <span class="tool-sep"></span>
+                <button type="button" class="tool-btn" onclick="exportWebPng()" title="将当前视图导出为图片">PNG 导出</button>
+                <button type="button" class="tool-btn" onclick="exportWebSvg()" title="将当前视图导出为SVG">SVG 导出</button>
+            </div>
+            
+            <div id="canvas-container"></div>
+            <img id="interaction-indicator" src="" alt="" aria-hidden="true">
+            <div id="viewport-legend" aria-label="轨迹颜色图例">
+                <div class="viewport-legend-title" id="viewport-legend-title"></div>
+                <div class="viewport-legend-bar" id="viewport-legend-bar"></div>
+                <div class="viewport-legend-labels" id="viewport-legend-labels"></div>
+            </div>
+            <div id="orientation-control" aria-label="三维视角控制">
+                <canvas id="orientation-gizmo" width="104" height="104" aria-label="三维方向指示器"></canvas>
+                <input type="number" id="azimuth-input" min="0" max="360" step="1" value="45" title="水平旋转角度（0–360°）" aria-label="水平旋转角度">
+                <input type="number" id="elevation-input" min="-90" max="90" step="1" value="35" title="垂直俯仰角度（-90–90°）" aria-label="垂直俯仰角度">
+            </div>
+        </div>
+        <div id="time-range-control" class="unavailable" aria-label="轨迹时间范围">
+            <div class="time-range-labels"><span id="time-start-label"></span><span id="time-end-label"></span></div>
+            <div class="dual-time-range">
+                <div class="dual-time-track"><div id="time-range-fill"></div></div>
+                <input type="range" id="time-start-slider" min="0" max="0" value="0" step="1" aria-label="片段开始时间">
+                <input type="range" id="time-end-slider" min="0" max="0" value="0" step="1" aria-label="片段结束时间">
+            </div>
+            <div class="keyframe-range hidden" aria-label="相机关键帧轨道">
+                <input type="range" id="time-playhead-slider" min="0" max="0" value="0" step="1" aria-label="动画播放位置">
+                <div id="keyframe-markers" class="hidden"></div>
+                <span id="keyframe-playhead-line" class="hidden"></span>
+            </div>
+            <div id="animation-panel" class="hidden" aria-label="关键帧动画">
+                <div class="animation-row">
+                    <button type="button" id="animation-add">＋关键帧</button><button type="button" id="animation-update">更新</button><button type="button" id="animation-delete">删除</button>
+                    <select id="animation-keyframe-list" aria-label="关键帧列表"></select>
+                    <label>至下一帧 <input type="number" id="animation-duration" min="0.1" max="30" step="0.5" value="2.0"> 秒</label>
+                    <button type="button" id="animation-prev-keyframe" title="上一个关键帧">|◀</button><button type="button" id="animation-play-toggle" title="播放">▶</button><button type="button" id="animation-stop">■</button><button type="button" id="animation-next-keyframe" title="下一个关键帧">▶|</button>
+                    <label>速度 <select id="animation-speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label><span id="animation-calculated-duration">预计 0 秒</span>
+                    <label><input type="checkbox" id="animation-loop"> 循环</label>
+                    <span id="animation-status">0 个有效关键帧</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <script>
+        // --- QGIS DATA INJECTION START ---
+        window.embeddedTrackData = null;
+        window.embeddedHoverOptions = null;
+        window.embeddedInteractionIcons = null;
+        window.embeddedSidebarIcons = null;
+        window.embeddedTheme = null;
+        // --- QGIS DATA INJECTION END ---
+
+        var trackData = window.embeddedTrackData || null;
+        var hoverOptions = window.embeddedHoverOptions;
+        if (!hoverOptions) {
+            try {
+                var stored = localStorage.getItem("3d_track_viewer_settings");
+                if (stored) hoverOptions = JSON.parse(stored);
+            } catch(e) {}
+            
+            if (!hoverOptions) {
+                hoverOptions = {
+                    show_time: true,
+                    show_elevation: true,
+                    show_speed: true,
+                    show_slope: true,
+                    unit_elevation: "m",
+                    unit_speed: "km/h",
+                    unit_slope: "%"
+                };
+            }
+        }
+        var interactionIcons = window.embeddedInteractionIcons || {
+            rotate: "assets/icons/View_Rotation.svg",
+            move: "assets/icons/Mobile_View.svg"
+        };
+        var sidebarIcons = window.embeddedSidebarIcons || {
+            collapse: "assets/icons/Collapse.svg",
+            expand: "assets/icons/Expand.svg"
+        };
+        var theme = window.embeddedTheme || {
+            window: "#f0f0f0",
+            base: "#ffffff",
+            text: "#202020",
+            muted: "#606060",
+            border: "#b8b8b8",
+            button: "#f5f5f5",
+            highlight: "#0066cc",
+            highlight_text: "#ffffff",
+            grid: "#888888",
+            font_family: "Segoe UI",
+            font_size: 9
+        };
+
+        // Apply theme dynamically to CSS root variables
+        function applyTheme(t) {
+            if (!t) return;
+            var root = document.documentElement;
+            if (t.window) root.style.setProperty('--window', t.window);
+            if (t.base) root.style.setProperty('--base', t.base);
+            if (t.text) root.style.setProperty('--text', t.text);
+            if (t.muted) root.style.setProperty('--muted', t.muted);
+            if (t.border) root.style.setProperty('--border', t.border);
+            if (t.button) root.style.setProperty('--button', t.button);
+            if (t.highlight) root.style.setProperty('--accent', t.highlight);
+            if (t.highlight_text) root.style.setProperty('--accent-text', t.highlight_text);
+            if (t.grid) root.style.setProperty('--grid', t.grid);
+            if (t.font_family) root.style.setProperty('--font-family', `"${t.font_family}", "Microsoft YaHei UI", sans-serif`);
+            if (t.font_size) root.style.setProperty('--font-size', t.font_size + 'pt');
+        }
+        applyTheme(theme);
+
+        // Bind initial icon sources
+        if (sidebarIcons && sidebarIcons.collapse) {
+            document.getElementById('sidebar-toggle-icon').src = sidebarIcons.collapse;
+        }
+        if (interactionIcons && interactionIcons.rotate) {
+            document.getElementById('interaction-indicator').src = interactionIcons.rotate;
+        }
+
+
+        var colorStops = ['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'];
+
+        function colorGradientCss() {
+            var last = Math.max(1, colorStops.length - 1);
+            return 'linear-gradient(to right, ' + colorStops.map(function(color, index) {
+                return color + ' ' + (index * 100 / last).toFixed(2) + '%';
+            }).join(', ') + ')';
+        }
+
+        function hexToRgb(hex) {
+            var value = parseInt(hex.substring(1), 16);
+            return { r: (value >> 16) & 255, g: (value >> 8) & 255, b: value & 255 };
+        }
+
+        function mixHexColors(first, second, amount) {
+            var a = hexToRgb(first), b = hexToRgb(second);
+            amount = Math.max(0, Math.min(1, amount));
+            return 'rgb(' + Math.round(a.r + (b.r-a.r)*amount) + ',' +
+                Math.round(a.g + (b.g-a.g)*amount) + ',' +
+                Math.round(a.b + (b.b-a.b)*amount) + ')';
+        }
+
+        function smoothStep(edge0, edge1, value) {
+            var t = Math.max(0, Math.min(1, (value-edge0)/(edge1-edge0)));
+            return t*t*(3-2*t);
+        }
+
+        var groundBackground = '#f7f7f7';
+        var skyBackground = '#dceeff';
+
+        function getColorRgb(val, minVal, maxVal) {
+            val = displayColorValue(val);
+            if (maxVal <= minVal) return hexToRgb(colorStops[0]);
+            var t = (val - minVal) / (maxVal - minVal);
+            t = Math.max(0, Math.min(1, t));
+            var scaled = t * (colorStops.length - 1);
+            var index = Math.min(colorStops.length - 2, Math.floor(scaled));
+            var fraction = scaled - index;
+            var a = hexToRgb(colorStops[index]);
+            var b = hexToRgb(colorStops[index + 1]);
+            return {
+                r: Math.round(a.r + (b.r - a.r) * fraction),
+                g: Math.round(a.g + (b.g - a.g) * fraction),
+                b: Math.round(a.b + (b.b - a.b) * fraction)
+            };
+        }
+
+        function segmentEndMetric(segment) {
+            if (!gradientEnabled) return segment[currentField];
+            var endValue = Number(segment[currentField + '2']);
+            return isFinite(endValue) ? endValue : segment[currentField];
+        }
+
+        function bindColorEditors(renderCallback) {
+            var editors = document.querySelectorAll('.color-stop');
+            for (var i = 0; i < editors.length; i++) {
+                (function(index) {
+                    editors[index].addEventListener('input', function(e) {
+                        colorStops[index] = e.target.value;
+                        document.querySelector('.legend-bar').style.background = colorGradientCss();
+                        renderCallback();
+                    });
+                })(i);
+            }
+        }
+
+        var colorClampByField = {};
+        var colorRangeModeByField = {};
+        var clippedColorRangeByField = {};
+        var preAnimationRangeModeByField = {};
+        var animationRangeActive = false;
+        var animationReferenceTrackEnabled = false;
+
+        function currentColorRangeMode() {
+            return colorRangeModeByField[currentField] || 'auto';
+        }
+
+        function updateColorRangeModeUi() {
+            var mode = currentColorRangeMode();
+            document.getElementById('color-range-mode').value = mode;
+            var readonlyStyle = mode !== 'manual';
+            document.getElementById('min-val').classList.toggle('range-readonly', readonlyStyle);
+            document.getElementById('max-val').classList.toggle('range-readonly', readonlyStyle);
+        }
+
+        function computeClippedColorRange() {
+            var minimum = Infinity, maximum = -Infinity;
+            var start = Math.max(0, Math.min(clipStartIndex, clipEndIndex));
+            var end = Math.min(allTrackSegments.length - 1, Math.max(clipStartIndex, clipEndIndex));
+            for (var index=start; index<=end; index++) {
+                var segment = allTrackSegments[index];
+                var first = displayColorValue(segment[currentField]);
+                var secondRaw = gradientEnabled ? Number(segment[currentField + '2']) : Number(segment[currentField]);
+                var second = displayColorValue(isFinite(secondRaw) ? secondRaw : segment[currentField]);
+                if (isFinite(first)) { minimum = Math.min(minimum, first); maximum = Math.max(maximum, first); }
+                if (isFinite(second)) { minimum = Math.min(minimum, second); maximum = Math.max(maximum, second); }
+            }
+            if (!isFinite(minimum) || !isFinite(maximum)) return null;
+            if (minimum >= maximum) {
+                var padding = Math.max(0.5, Math.abs(minimum) * 0.01);
+                minimum -= padding; maximum += padding;
+            }
+            return { min: minimum, max: maximum };
+        }
+
+        function lockedColorRange() {
+            if (!clippedColorRangeByField[currentField])
+                clippedColorRangeByField[currentField] = computeClippedColorRange();
+            return clippedColorRangeByField[currentField];
+        }
+
+        function invalidateClippedColorRanges() {
+            clippedColorRangeByField = {};
+        }
+
+        function syncColorRangeForAnimation() {
+            var mode = currentColorRangeMode();
+            if (animationRangeActive && mode === 'auto') {
+                preAnimationRangeModeByField[currentField] = 'auto';
+                colorRangeModeByField[currentField] = 'clip';
+            }
+            updateColorRangeModeUi();
+        }
+
+        function setAnimationColorRangeActive(enabled) {
+            animationRangeActive = !!enabled;
+            if (enabled) {
+                syncColorRangeForAnimation();
+            } else {
+                Object.keys(preAnimationRangeModeByField).forEach(function(field) {
+                    if (colorRangeModeByField[field] === 'clip') colorRangeModeByField[field] = 'auto';
+                });
+                preAnimationRangeModeByField = {};
+                updateColorRangeModeUi();
+            }
+            if (trackRenderHandler) trackRenderHandler();
+        }
+
+        function currentColorUnit() {
+            var configured = hoverOptions['unit_' + currentField];
+            return configured || (trackData.units && trackData.units[currentField]) || '';
+        }
+
+        function displayColorValue(value) {
+            var sourceUnit = (trackData.units && trackData.units[currentField]) || currentColorUnit();
+            var converted = convertHoverValue(value, sourceUnit, currentColorUnit(), currentField);
+            return converted === null ? Number(value) : converted;
+        }
+
+        function resolveColorRange(actualMin, actualMax) {
+            actualMin = displayColorValue(actualMin);
+            actualMax = displayColorValue(actualMax);
+            var mode = currentColorRangeMode();
+            var saved = mode === 'manual' ? colorClampByField[currentField] : null;
+            var locked = mode === 'clip' ? lockedColorRange() : null;
+            var minimum = saved && isFinite(saved.min) ? saved.min :
+                (locked && isFinite(locked.min) ? locked.min : actualMin);
+            var maximum = saved && isFinite(saved.max) ? saved.max :
+                (locked && isFinite(locked.max) ? locked.max : actualMax);
+            document.getElementById('min-val').value = Number(minimum).toFixed(1);
+            document.getElementById('max-val').value = Number(maximum).toFixed(1);
+            var unit = currentColorUnit();
+            document.getElementById('min-unit').innerText = unit;
+            document.getElementById('max-unit').innerText = unit;
+            updateViewportLegend(minimum, maximum);
+            updateColorRangeModeUi();
+            return { min: minimum, max: maximum };
+        }
+
+        function updateViewportLegend(minimum, maximum) {
+            var names = { speed: '速度', elevation: '高程', slope: '坡度' };
+            var unit = currentColorUnit();
+            document.getElementById('viewport-legend-title').innerText =
+                (names[currentField] || currentField) + (unit ? ' (' + unit + ')' : '');
+            document.getElementById('viewport-legend-bar').style.background = colorGradientCss();
+            var labels = [];
+            for (var index = 0; index < 5; index++) {
+                var value = minimum + (maximum - minimum) * index / 4;
+                var magnitude = Math.abs(value);
+                var digits = magnitude >= 100 ? 0 : (magnitude >= 10 ? 1 : 2);
+                labels.push('<span>' + Number(value).toFixed(digits) + '</span>');
+            }
+            document.getElementById('viewport-legend-labels').innerHTML = labels.join('');
+        }
+
+        function bindLegendToggle() {
+            var button = document.getElementById('legend-toggle');
+            var legend = document.getElementById('viewport-legend');
+            button.addEventListener('click', function(event) {
+                event.stopPropagation();
+                var enabled = button.getAttribute('aria-pressed') !== 'true';
+                legendEnabled = enabled;
+                button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+                button.innerText = enabled ? '图例：开' : '图例：关';
+                legend.classList.toggle('hidden', !enabled);
+            });
+        }
+
+        function bindAxisToggle() {
+            var button = document.getElementById('axis-toggle');
+            var gizmo = document.getElementById('orientation-gizmo');
+            var orientationControl = document.getElementById('orientation-control');
+            button.addEventListener('click', function(event) {
+                event.stopPropagation();
+                axisEnabled = button.getAttribute('aria-pressed') !== 'true';
+                button.setAttribute('aria-pressed', axisEnabled ? 'true' : 'false');
+                button.innerText = axisEnabled ? '坐标轴：开' : '坐标轴：关';
+                orientationControl.classList.toggle('hidden', !axisEnabled);
+                if (!axisEnabled) {
+                    gizmoCtx.clearRect(0, 0, 104, 104);
+                } else if (lastGizmoAxes) {
+                    // The Canvas renderer normally refreshes only after a
+                    // camera interaction. Repaint from the cached camera axes
+                    // so switching the indicator back on is immediate.
+                    drawOrientationGizmo(lastGizmoAxes);
+                }
+            });
+        }
+
+        function bindClampEditors(renderCallback) {
+            var minimumInput = document.getElementById('min-val');
+            var maximumInput = document.getElementById('max-val');
+            var modeSelect = document.getElementById('color-range-mode');
+            function enterManualMode() {
+                if (currentColorRangeMode() === 'manual') return;
+                colorRangeModeByField[currentField] = 'manual';
+                delete preAnimationRangeModeByField[currentField];
+                colorClampByField[currentField] = {
+                    min: parseFloat(minimumInput.value), max: parseFloat(maximumInput.value)
+                };
+                updateColorRangeModeUi();
+            }
+            function applyClamp() {
+                var minimum = parseFloat(minimumInput.value);
+                var maximum = parseFloat(maximumInput.value);
+                if (!isFinite(minimum) || !isFinite(maximum) || minimum >= maximum) {
+                    var saved = colorClampByField[currentField];
+                    if (saved) { minimumInput.value = saved.min; maximumInput.value = saved.max; }
+                    return;
+                }
+                colorRangeModeByField[currentField] = 'manual';
+                delete preAnimationRangeModeByField[currentField];
+                colorClampByField[currentField] = { min: minimum, max: maximum };
+                renderCallback();
+            }
+            minimumInput.addEventListener('focus', enterManualMode);
+            maximumInput.addEventListener('focus', enterManualMode);
+            minimumInput.addEventListener('change', applyClamp);
+            maximumInput.addEventListener('change', applyClamp);
+            modeSelect.addEventListener('change', function() {
+                var mode = modeSelect.value;
+                colorRangeModeByField[currentField] = mode;
+                delete preAnimationRangeModeByField[currentField];
+                if (mode === 'clip') delete clippedColorRangeByField[currentField];
+                if (mode === 'manual' && !colorClampByField[currentField]) {
+                    colorClampByField[currentField] = {
+                        min: parseFloat(minimumInput.value), max: parseFloat(maximumInput.value)
+                    };
+                }
+                updateColorRangeModeUi();
+                renderCallback();
+            });
+            updateColorRangeModeUi();
+        }
+
+        // --- Try WebGL mode first ---
+        var isWebGL = false;
+        try {
+            if (window.THREE && window.THREE.WebGLRenderer) {
+                var testRenderer = new THREE.WebGLRenderer({ antialias: true });
+                if (testRenderer && testRenderer.getContext()) {
+                    isWebGL = true;
+                    testRenderer.dispose();
+                }
+            }
+        } catch(e) {
+            isWebGL = false;
+        }
+
+        var currentField = window.embeddedInitialField || "elevation";
+        document.getElementById('field-select').value = currentField;
+        var currentExag = 1.0;
+        var currentWidth = 4.0;
+        var gradientEnabled = false;
+        var legendEnabled = true;
+        var axisEnabled = true;
+        var viewerResizeHandler = null;
+        var followDisplayEnabled = false;
+        var tooltip = document.getElementById('tooltip');
+        var interactionIndicator = document.getElementById('interaction-indicator');
+        var vectorProjectionHandler = null;
+        var vectorViewportHandler = null;
+        var vectorBackgroundHandler = null;
+        var trackRenderHandler = null;
+        var resetCameraHandler = null;
+        var zoomToLayerHandler = null;
+        var angleApplyHandler = null;
+        var lastDisplayedAzimuth = null;
+        var lastDisplayedElevation = null;
+
+        function normalizedAzimuth(value) {
+            value = Number(value);
+            return ((value % 360) + 360) % 360;
+        }
+
+        function updateAngleEditors(azimuth, elevation) {
+            var azimuthInput = document.getElementById('azimuth-input');
+            var elevationInput = document.getElementById('elevation-input');
+            azimuth = normalizedAzimuth(azimuth);
+            elevation = Math.max(-90, Math.min(90, Number(elevation) || 0));
+            var azimuthText = String(Math.round(azimuth));
+            var elevationText = String(Math.round(elevation));
+            if (azimuthInput.value !== azimuthText || azimuthText !== lastDisplayedAzimuth) {
+                azimuthInput.value = azimuthText;
+                lastDisplayedAzimuth = azimuthText;
+            }
+            if (elevationInput.value !== elevationText || elevationText !== lastDisplayedElevation) {
+                elevationInput.value = elevationText;
+                lastDisplayedElevation = elevationText;
+            }
+        }
+
+        function bindAngleEditors() {
+            var azimuthInput = document.getElementById('azimuth-input');
+            var elevationInput = document.getElementById('elevation-input');
+            function applyAngles() {
+                if (!angleApplyHandler) return;
+                var azimuth = parseFloat(azimuthInput.value);
+                var elevation = parseFloat(elevationInput.value);
+                if (!isFinite(azimuth) || !isFinite(elevation)) return;
+                azimuth = normalizedAzimuth(Math.round(azimuth));
+                elevation = Math.max(-90, Math.min(90, Math.round(elevation)));
+                angleApplyHandler(azimuth, elevation);
+                updateAngleEditors(azimuth, elevation);
+            }
+            azimuthInput.addEventListener('change', applyAngles);
+            elevationInput.addEventListener('change', applyAngles);
+            azimuthInput.addEventListener('keydown', function(event) { if (event.key === 'Enter') applyAngles(); });
+            elevationInput.addEventListener('keydown', function(event) { if (event.key === 'Enter') applyAngles(); });
+        }
+
+        // Keyframe animation shared by the WebGL and Canvas renderers.
+        var animationStateReader = null;
+        var animationStateApplier = null;
+        var animationForceRenderHandler = null;
+        var animationPlaybackStateHandler = null;
+        var animationKeyframes = [];
+        var animationPlaying = false;
+        var animationElapsed = 0;
+        var animationLastTimestamp = 0;
+        var animationFrameId = null;
+        var animationExportSavedState = null;
+
+        function updateAnimationPlayButton() {
+            var button = document.getElementById('animation-play-toggle');
+            if (!button) return;
+            button.innerText = animationPlaying ? 'Ⅱ' : '▶';
+            button.title = animationPlaying ? '暂停' : '播放';
+            button.setAttribute('aria-label', button.title);
+        }
+
+        function toggleKeyframePlayback() {
+            if (animationPlaying) pauseKeyframeAnimation();
+            else playKeyframeAnimation();
+        }
+
+        function animationSpeed() {
+            return Math.max(0.1, parseFloat(document.getElementById('animation-speed').value) || 1);
+        }
+
+        function cloneAnimationState(state) {
+            return JSON.parse(JSON.stringify(state));
+        }
+
+        function interpolateAnimationState(a, b, t, segIndex, totalSegs) {
+            t = Math.max(0, Math.min(1, t));
+            var eased = t;
+            if (totalSegs === undefined || totalSegs <= 1) {
+                eased = easeInOutCubic(t);
+            } else if (segIndex === 0) {
+                // First segment of multi-keyframe sequence: Ease-In only (acceleration from rest)
+                eased = t * t * (2 - t);
+            } else if (segIndex === totalSegs - 1) {
+                // Last segment of multi-keyframe sequence: Ease-Out only (deceleration to rest)
+                eased = t * (1 + t - t * t);
+            } else {
+                // Middle segments: Constant velocity pass-through
+                eased = t;
+            }
+            var result = cloneAnimationState(a);
+            var azimuthDelta = ((b.azimuth - a.azimuth + 540) % 360) - 180;
+            result.azimuth = normalizedAzimuth(a.azimuth + azimuthDelta * eased);
+            ['elevation', 'distance', 'zoom'].forEach(function(key) {
+                if (isFinite(a[key]) && isFinite(b[key])) result[key] = a[key] + (b[key] - a[key]) * eased;
+            });
+            ['target', 'pan'].forEach(function(key) {
+                if (a[key] && b[key]) result[key] = a[key].map(function(value, index) {
+                    return value + (b[key][index] - value) * eased;
+                });
+            });
+            if (isFinite(a.timeStart) && isFinite(b.timeStart))
+                result.timeStart = Math.round(a.timeStart + (b.timeStart-a.timeStart)*eased);
+            if (isFinite(a.timeEnd) && isFinite(b.timeEnd))
+                result.timeEnd = Math.round(a.timeEnd + (b.timeEnd-a.timeEnd)*eased);
+            return result;
+        }
+
+        function legacyApplyAnimationTimeline(timeValue) {
+            if (!animationStateApplier || !animationKeyframes.length) return;
+            if (animationKeyframes.length === 1) {
+                animationStateApplier(cloneAnimationState(animationKeyframes[0].state));
+                return;
+            }
+            var remaining = Math.max(0, timeValue);
+            var totalSegs = animationKeyframes.length - 1;
+            for (var i = 0; i + 1 < animationKeyframes.length; i++) {
+                var duration = Math.max(0.1, Number(animationKeyframes[i].duration) || 2);
+                if (remaining <= duration || i + 2 === animationKeyframes.length) {
+                    animationStateApplier(interpolateAnimationState(
+                        animationKeyframes[i].state, animationKeyframes[i+1].state,
+                        Math.min(1, remaining / duration), i, totalSegs));
+                    return;
+                }
+                remaining -= duration;
+            }
+            animationStateApplier(cloneAnimationState(animationKeyframes[animationKeyframes.length-1].state));
+        }
+
+        function legacyAnimationTick(timestamp) {
+            if (!animationPlaying) return;
+            if (!animationLastTimestamp) animationLastTimestamp = timestamp;
+            animationElapsed += (timestamp - animationLastTimestamp) / 1000 * animationSpeed();
+            animationLastTimestamp = timestamp;
+            var total = animationTotalDuration();
+            if (animationElapsed >= total) {
+                if (document.getElementById('animation-loop').checked && total > 0)
+                    animationElapsed = animationElapsed % total;
+                else {
+                    animationElapsed = total;
+                    animationPlaying = false;
+                }
+            }
+            applyAnimationTimeline(animationElapsed);
+            if (animationPlaying) animationFrameId = requestAnimationFrame(animationTick);
+        }
+
+        function legacyPlayKeyframeAnimation() {
+            if (animationKeyframes.length < 2 || !animationStateApplier) return false;
+            if (animationElapsed >= animationTotalDuration()) animationElapsed = 0;
+            animationPlaying = true;
+            animationLastTimestamp = 0;
+            animationFrameId = requestAnimationFrame(animationTick);
+            return true;
+        }
+
+        function pauseKeyframeAnimation() {
+            animationPlaying = false;
+            if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+            if (animationPlaybackStateHandler) animationPlaybackStateHandler(false);
+            animationReferenceTrackEnabled =
+                !document.getElementById('animation-panel').classList.contains('hidden') &&
+                !document.body.classList.contains('animation-export');
+            updateAnimationPlayButton();
+            if (refreshTimeRange) {
+                refreshTimeRange(true);
+            } else if (trackRenderHandler) {
+                trackRenderHandler();
+            }
+        }
+
+        function legacyStopKeyframeAnimation() {
+            pauseKeyframeAnimation();
+            animationElapsed = 0;
+            applyAnimationTimeline(0);
+        }
+
+        function legacyToggleAnimationPanel(enabled) {
+            var panel = document.getElementById('animation-panel');
+            panel.classList.toggle('hidden', !enabled);
+            return true;
+        }
+
+        function legacyGetAnimationExportInfo() {
+            return JSON.stringify({
+                count: animationKeyframes.length,
+                baseDuration: animationTotalDuration(),
+                speed: animationSpeed(),
+                exportDuration: animationTotalDuration() / animationSpeed(),
+                loop: document.getElementById('animation-loop').checked
+            });
+        }
+
+        function legacyBeginAnimationExport() {
+            if (animationKeyframes.length < 2 || !animationStateReader) return false;
+            pauseKeyframeAnimation();
+            animationExportSavedState = cloneAnimationState(animationStateReader());
+            document.body.classList.add('animation-export');
+            return true;
+        }
+
+        function legacySetAnimationExportTime(exportSeconds) {
+            applyAnimationTimeline(Math.min(animationTotalDuration(), Math.max(0, exportSeconds) * animationSpeed()));
+            if (animationForceRenderHandler) animationForceRenderHandler();
+            return true;
+        }
+
+        function legacyEndAnimationExport() {
+            document.body.classList.remove('animation-export');
+            if (animationExportSavedState && animationStateApplier)
+                animationStateApplier(animationExportSavedState);
+            animationExportSavedState = null;
+            return true;
+        }
+
+        function getExportViewportRect() {
+            var viewport = document.querySelector('.viewport-stage');
+            if (!viewport) return '';
+            var rect = viewport.getBoundingClientRect();
+            return JSON.stringify({
+                x: Math.round(rect.left), y: Math.round(rect.top),
+                width: Math.round(rect.width), height: Math.round(rect.height)
+            });
+        }
+
+        function legacyBindAnimationPanel() {
+            var list = document.getElementById('animation-keyframe-list');
+            document.getElementById('animation-add').addEventListener('click', function() {
+                if (!animationStateReader) return;
+                animationKeyframes.push({ state: cloneAnimationState(animationStateReader()), duration: 2 });
+                refreshAnimationPanel();
+                list.selectedIndex = animationKeyframes.length - 1;
+            });
+            document.getElementById('animation-update').addEventListener('click', function() {
+                if (!animationStateReader || list.selectedIndex < 0) return;
+                animationKeyframes[list.selectedIndex].state = cloneAnimationState(animationStateReader());
+            });
+            document.getElementById('animation-delete').addEventListener('click', function() {
+                if (list.selectedIndex < 0) return;
+                animationKeyframes.splice(list.selectedIndex, 1);
+                refreshAnimationPanel();
+            });
+            list.addEventListener('change', function() {
+                if (list.selectedIndex < 0) return;
+                document.getElementById('animation-duration').value =
+                    Number(animationKeyframes[list.selectedIndex].duration || 2).toFixed(1);
+                if (animationStateApplier)
+                    animationStateApplier(cloneAnimationState(animationKeyframes[list.selectedIndex].state));
+            });
+            document.getElementById('animation-duration').addEventListener('change', function(event) {
+                if (list.selectedIndex < 0) return;
+                animationKeyframes[list.selectedIndex].duration =
+                    Math.max(0.1, Math.min(30, parseFloat(event.target.value) || 2));
+                refreshAnimationPanel();
+            });
+            document.getElementById('animation-play-toggle').addEventListener('click', toggleKeyframePlayback);
+            document.getElementById('animation-stop').addEventListener('click', stopKeyframeAnimation);
+            refreshAnimationPanel();
+        }
+
+        // Unified clipping timeline: the clipping handles define the animation
+        // scope, and each keyframe is anchored to an absolute segment index.
+        var clipStartIndex = 0;
+        var clipEndIndex = 0;
+        var animationPlayheadIndex = 0;
+
+        function activeAnimationFrames() {
+            return animationKeyframes.filter(function(frame) {
+                return frame.timeIndex >= clipStartIndex && frame.timeIndex <= clipEndIndex;
+            }).sort(function(a, b) { return a.timeIndex - b.timeIndex; });
+        }
+
+        function animationTotalDuration() {
+            var frames = activeAnimationFrames();
+            var total = 0;
+            for (var i=0; i+1<frames.length; i++)
+                total += Math.max(0.1, Math.min(30, Number(frames[i].duration) || 2));
+            return total;
+        }
+
+        function animationIndexAtTime(timeValue) {
+            var frames = activeAnimationFrames();
+            if (!frames.length) return clipStartIndex;
+            if (frames.length === 1) return frames[0].timeIndex;
+            var remaining = Math.max(0, Number(timeValue) || 0);
+            for (var i=0; i+1<frames.length; i++) {
+                var duration = Math.max(0.1, Math.min(30, Number(frames[i].duration) || 2));
+                if (remaining <= duration || i+2 === frames.length) {
+                    var ratio = Math.max(0, Math.min(1, remaining/duration));
+                    return frames[i].timeIndex +
+                        (frames[i+1].timeIndex-frames[i].timeIndex)*ratio;
+                }
+                remaining -= duration;
+            }
+            return frames[frames.length-1].timeIndex;
+        }
+
+        function animationTimeAtIndex(index) {
+            var frames = activeAnimationFrames();
+            if (frames.length < 2) return 0;
+            index = Math.max(frames[0].timeIndex,
+                Math.min(frames[frames.length-1].timeIndex, index));
+            var elapsed = 0;
+            for (var i=0; i+1<frames.length; i++) {
+                var duration = Math.max(0.1, Math.min(30, Number(frames[i].duration) || 2));
+                if (index <= frames[i+1].timeIndex) {
+                    var span = Math.max(1, frames[i+1].timeIndex-frames[i].timeIndex);
+                    return elapsed + duration*(index-frames[i].timeIndex)/span;
+                }
+                elapsed += duration;
+            }
+            return elapsed;
+        }
+
+        function animationStateAtIndex(index) {
+            var frames = activeAnimationFrames();
+            if (!frames.length) return null;
+            if (frames.length === 1 || index <= frames[0].timeIndex)
+                return cloneAnimationState(frames[0].state);
+            if (index >= frames[frames.length-1].timeIndex)
+                return cloneAnimationState(frames[frames.length-1].state);
+            var totalSegs = frames.length - 1;
+            for (var i = 0; i + 1 < frames.length; i++) {
+                if (index <= frames[i+1].timeIndex) {
+                    var span = Math.max(1, frames[i+1].timeIndex - frames[i].timeIndex);
+                    return interpolateAnimationState(frames[i].state, frames[i+1].state,
+                        (index - frames[i].timeIndex) / span, i, totalSegs);
+                }
+            }
+            return null;
+        }
+
+        function applyUnifiedPlayhead(index, refreshTrack) {
+            animationPlayheadIndex = Math.max(clipStartIndex, Math.min(clipEndIndex, Math.round(index)));
+            var slider = document.getElementById('time-playhead-slider');
+            slider.value = animationPlayheadIndex;
+            timeStartIndex = clipStartIndex;
+            timeEndIndex = animationPlayheadIndex;
+            var state = animationStateAtIndex(animationPlayheadIndex);
+            if (state && animationStateApplier) animationStateApplier(state);
+            if (refreshTrack !== false) refreshTimeRange();
+            updateTimeRangeUi();
+        }
+
+        function jumpAnimationKeyframe(direction) {
+            pauseKeyframeAnimation();
+            var frames = activeAnimationFrames();
+            var targetIndex = direction < 0 ? clipStartIndex : clipEndIndex;
+            var selectedFrame = null;
+            if (frames.length) {
+                if (direction < 0) {
+                    for (var i=frames.length-1; i>=0; i--) {
+                        if (frames[i].timeIndex < animationPlayheadIndex) {
+                            selectedFrame = frames[i]; targetIndex = frames[i].timeIndex; break;
+                        }
+                    }
+                } else {
+                    for (var j=0; j<frames.length; j++) {
+                        if (frames[j].timeIndex > animationPlayheadIndex) {
+                            selectedFrame = frames[j]; targetIndex = frames[j].timeIndex; break;
+                        }
+                    }
+                }
+            }
+            animationElapsed = animationTimeAtIndex(targetIndex);
+            applyUnifiedPlayhead(targetIndex, true);
+            if (selectedFrame) {
+                var sourceIndex = animationKeyframes.indexOf(selectedFrame);
+                var list = document.getElementById('animation-keyframe-list');
+                for (var optionIndex=0; optionIndex<list.options.length; optionIndex++) {
+                    if (Number(list.options[optionIndex].value) === sourceIndex)
+                        list.selectedIndex = optionIndex;
+                }
+                refreshAnimationPanel();
+            }
+            return targetIndex;
+        }
+
+        function refreshKeyframeMarkers() {
+            var markers = document.getElementById('keyframe-markers');
+            var maximum = Math.max(1, allTrackSegments.length - 1);
+            markers.innerHTML = '';
+            animationKeyframes.forEach(function(frame, index) {
+                var marker = document.createElement('span');
+                marker.className = 'keyframe-marker' +
+                    ((frame.timeIndex < clipStartIndex || frame.timeIndex > clipEndIndex) ? ' inactive' : '');
+                marker.style.left = (frame.timeIndex * 100 / maximum) + '%';
+                marker.title = '关键帧 ' + (index + 1) + ' — ' + segmentTimeLabel(frame.timeIndex, false);
+                marker.addEventListener('click', function() {
+                    var list = document.getElementById('animation-keyframe-list');
+                    for (var optionIndex=0; optionIndex<list.options.length; optionIndex++) {
+                        if (Number(list.options[optionIndex].value) === index) list.selectedIndex = optionIndex;
+                    }
+                    if (frame.timeIndex >= clipStartIndex && frame.timeIndex <= clipEndIndex)
+                        applyUnifiedPlayhead(frame.timeIndex, true);
+                    refreshAnimationPanel();
+                });
+                markers.appendChild(marker);
+            });
+        }
+
+        function refreshAnimationPanel() {
+            var list = document.getElementById('animation-keyframe-list');
+            var selectedValue = list.selectedIndex >= 0 ? Number(list.options[list.selectedIndex].value) : -1;
+            list.innerHTML = '';
+            animationKeyframes.forEach(function(frame, index) {
+                var active = frame.timeIndex >= clipStartIndex && frame.timeIndex <= clipEndIndex;
+                var option = document.createElement('option');
+                option.value = index;
+                option.text = 'K' + (index+1) + ' · ' + segmentTimeLabel(frame.timeIndex, false) +
+                    (active ? '' : '（区间外）');
+                list.appendChild(option);
+                if (index === selectedValue) list.selectedIndex = list.options.length - 1;
+            });
+            var durationInput = document.getElementById('animation-duration');
+            var selectedIndex = list.selectedIndex >= 0 ? Number(list.options[list.selectedIndex].value) : -1;
+            var selectedFrame = selectedIndex >= 0 ? animationKeyframes[selectedIndex] : null;
+            var activeFrames = activeAnimationFrames();
+            var isLastActiveFrame = selectedFrame && activeFrames.length &&
+                selectedFrame === activeFrames[activeFrames.length-1];
+            durationInput.disabled = !selectedFrame || isLastActiveFrame;
+            durationInput.value = selectedFrame ?
+                Math.max(0.1, Math.min(30, Number(selectedFrame.duration) || 2)).toFixed(1) : '2.0';
+            var activeCount = activeAnimationFrames().length;
+            var calculatedDuration = animationTotalDuration() / animationSpeed();
+            var durationText = Math.abs(calculatedDuration - Math.round(calculatedDuration)) < 0.05
+                ? String(Math.round(calculatedDuration)) : calculatedDuration.toFixed(1);
+            document.getElementById('animation-calculated-duration').innerText =
+                '预计 ' + durationText + ' 秒';
+            document.getElementById('animation-status').innerText =
+                activeCount + ' 个有效关键帧 / ' + animationTotalDuration().toFixed(1) + ' 秒';
+            refreshKeyframeMarkers();
+        }
+
+        function animationTick(timestamp) {
+            if (!animationPlaying) return;
+            if (!animationLastTimestamp) animationLastTimestamp = timestamp;
+            animationElapsed += (timestamp-animationLastTimestamp)/1000 * animationSpeed();
+            animationLastTimestamp = timestamp;
+            var total = animationTotalDuration();
+            if (animationElapsed >= total) {
+                if (document.getElementById('animation-loop').checked) animationElapsed %= total;
+                else {
+                    animationElapsed = total;
+                    animationPlaying = false;
+                    updateAnimationPlayButton();
+                }
+            }
+            applyUnifiedPlayhead(animationIndexAtTime(animationElapsed), true);
+            if (animationPlaying) animationFrameId = requestAnimationFrame(animationTick);
+            else {
+                if (animationPlaybackStateHandler) animationPlaybackStateHandler(false);
+                animationReferenceTrackEnabled =
+                    !document.getElementById('animation-panel').classList.contains('hidden');
+                // Re-apply the exact end state after releasing the controls so
+                // no residual OrbitControls damping can shift the camera.
+                var frames = activeAnimationFrames();
+                applyUnifiedPlayhead(frames.length ? frames[frames.length-1].timeIndex : clipEndIndex, true);
+            }
+        }
+
+        function playKeyframeAnimation() {
+            var frames = activeAnimationFrames();
+            if (!timeControlAvailable || frames.length < 2) return false;
+            if (animationElapsed >= animationTotalDuration()) animationElapsed = 0;
+            // The translucent complete track is an editing aid, not part of
+            // playback itself.
+            animationReferenceTrackEnabled = false;
+            animationPlaying = true;
+            animationLastTimestamp = 0;
+            updateAnimationPlayButton();
+            if (animationPlaybackStateHandler) animationPlaybackStateHandler(true);
+            animationFrameId = requestAnimationFrame(animationTick);
+            return true;
+        }
+
+        function stopKeyframeAnimation() {
+            pauseKeyframeAnimation();
+            animationElapsed = 0;
+            var frames = activeAnimationFrames();
+            applyUnifiedPlayhead(frames.length ? frames[0].timeIndex : clipStartIndex, true);
+        }
+
+        function toggleAnimationPanel(enabled) {
+            if (!timeControlAvailable) return false;
+            animationReferenceTrackEnabled = !!enabled;
+            setAnimationColorRangeActive(enabled);
+            document.querySelector('.viewport').classList.toggle('animation-editing', !!enabled);
+            document.getElementById('animation-panel').classList.toggle('hidden', !enabled);
+            document.querySelector('.keyframe-range').classList.toggle('hidden', !enabled);
+            document.getElementById('keyframe-markers').classList.toggle('hidden', !enabled);
+            document.getElementById('keyframe-playhead-line').classList.toggle('hidden', !enabled);
+            setTimeClippingEnabled(enabled || document.getElementById('time-range-control').classList.contains('active'));
+            refreshAnimationPanel();
+            requestAnimationFrame(function() {
+                window.dispatchEvent(new Event('resize'));
+            });
+            return true;
+        }
+
+        function getAnimationExportInfo() {
+            return JSON.stringify({
+                count: activeAnimationFrames().length,
+                baseDuration: animationTotalDuration(), speed: animationSpeed(),
+                exportDuration: animationTotalDuration()/animationSpeed(),
+                loop: document.getElementById('animation-loop').checked
+            });
+        }
+
+        function beginAnimationExport() {
+            if (!timeControlAvailable || !animationStateReader || activeAnimationFrames().length < 2)
+                return false;
+            pauseKeyframeAnimation();
+            animationExportSavedState = {
+                camera: cloneAnimationState(animationStateReader()), playhead: animationPlayheadIndex
+            };
+            document.body.classList.add('animation-export');
+            animationReferenceTrackEnabled = false;
+            if (trackRenderHandler) trackRenderHandler();
+            return true;
+        }
+
+        function setAnimationExportTime(exportSeconds) {
+            var total = animationTotalDuration();
+            var timelineSeconds = Math.min(total, Math.max(0, exportSeconds)*animationSpeed());
+            applyUnifiedPlayhead(animationIndexAtTime(timelineSeconds), true);
+            // GIF export is deterministic: rebuild the clipped geometry now
+            // instead of waiting for the browser's next animation frame.
+            trackChunks = buildTrackChunks(getVisibleSegments(), 192);
+            activeCanvasChunks = [];
+            if (trackRenderHandler) trackRenderHandler();
+            if (animationForceRenderHandler) animationForceRenderHandler();
+            return true;
+        }
+
+        function endAnimationExport() {
+            document.body.classList.remove('animation-export');
+            if (animationExportSavedState) {
+                if (animationStateApplier) animationStateApplier(animationExportSavedState.camera);
+                applyUnifiedPlayhead(animationExportSavedState.playhead, true);
+            }
+            animationExportSavedState = null;
+            animationReferenceTrackEnabled =
+                !document.getElementById('animation-panel').classList.contains('hidden');
+            if (trackRenderHandler) trackRenderHandler();
+            return true;
+        }
+
+        function bindAnimationPanel() {
+            var list = document.getElementById('animation-keyframe-list');
+            document.getElementById('animation-add').addEventListener('click', function() {
+                if (!animationStateReader || animationPlayheadIndex < clipStartIndex || animationPlayheadIndex > clipEndIndex) return;
+                animationKeyframes.push({
+                    timeIndex: animationPlayheadIndex,
+                    state: cloneAnimationState(animationStateReader()),
+                    duration: 2
+                });
+                animationKeyframes.sort(function(a,b) { return a.timeIndex-b.timeIndex; });
+                refreshAnimationPanel();
+            });
+            document.getElementById('animation-update').addEventListener('click', function() {
+                if (!animationStateReader || list.selectedIndex < 0) return;
+                var index = Number(list.options[list.selectedIndex].value);
+                animationKeyframes[index].state = cloneAnimationState(animationStateReader());
+                animationKeyframes[index].timeIndex = animationPlayheadIndex;
+                animationKeyframes.sort(function(a,b) { return a.timeIndex-b.timeIndex; });
+                refreshAnimationPanel();
+            });
+            document.getElementById('animation-delete').addEventListener('click', function() {
+                if (list.selectedIndex < 0) return;
+                animationKeyframes.splice(Number(list.options[list.selectedIndex].value), 1);
+                refreshAnimationPanel();
+            });
+            list.addEventListener('change', function() {
+                if (list.selectedIndex < 0) return;
+                var frame = animationKeyframes[Number(list.options[list.selectedIndex].value)];
+                if (frame.timeIndex >= clipStartIndex && frame.timeIndex <= clipEndIndex)
+                    applyUnifiedPlayhead(frame.timeIndex, true);
+                refreshAnimationPanel();
+            });
+            document.getElementById('animation-play-toggle').addEventListener('click', toggleKeyframePlayback);
+            document.getElementById('animation-stop').addEventListener('click', stopKeyframeAnimation);
+            document.getElementById('animation-prev-keyframe').addEventListener('click', function() {
+                jumpAnimationKeyframe(-1);
+            });
+            document.getElementById('animation-next-keyframe').addEventListener('click', function() {
+                jumpAnimationKeyframe(1);
+            });
+            document.getElementById('animation-speed').addEventListener('change', function() {
+                refreshAnimationPanel();
+            });
+            document.getElementById('animation-duration').addEventListener('change', function(event) {
+                if (list.selectedIndex < 0) return;
+                var index = Number(list.options[list.selectedIndex].value);
+                animationKeyframes[index].duration =
+                    Math.max(0.1, Math.min(30, parseFloat(event.target.value) || 2));
+                refreshAnimationPanel();
+            });
+            document.getElementById('time-playhead-slider').addEventListener('input', function(event) {
+                pauseKeyframeAnimation();
+                animationElapsed = animationTimeAtIndex(Number(event.target.value));
+                applyUnifiedPlayhead(Number(event.target.value), true);
+            });
+        }
+
+        function buildVectorGizmo(width, height) {
+            if (!axisEnabled || !lastGizmoAxes || lastGizmoAxes.length < 3) return '';
+            var axes = lastGizmoAxes.map(function(axis) {
+                return {x:axis.x,y:axis.y,depth:axis.depth};
+            });
+            var scale = 0;
+            axes.forEach(function(axis) {
+                scale = Math.max(scale, Math.sqrt(axis.x*axis.x+axis.y*axis.y+axis.depth*axis.depth));
+            });
+            scale = scale || 1;
+            axes.forEach(function(axis) { axis.x/=scale; axis.y/=scale; axis.depth/=scale; });
+            function vertex(sx,sy,sz) {
+                return {
+                    x:52+35.36*(sx*axes[0].x+sy*axes[1].x+sz*axes[2].x),
+                    y:52-35.36*(sx*axes[0].y+sy*axes[1].y+sz*axes[2].y),
+                    depth:sx*axes[0].depth+sy*axes[1].depth+sz*axes[2].depth
+                };
+            }
+            var faces = [
+                {axis:0,sign:1,label:'右',corners:[[1,-1,-1],[1,1,-1],[1,1,1],[1,-1,1]]},
+                {axis:0,sign:-1,label:'左',corners:[[-1,-1,1],[-1,1,1],[-1,1,-1],[-1,-1,-1]]},
+                {axis:1,sign:1,label:'后',corners:[[-1,1,-1],[-1,1,1],[1,1,1],[1,1,-1]]},
+                {axis:1,sign:-1,label:'前',corners:[[1,-1,-1],[1,-1,1],[-1,-1,1],[-1,-1,-1]]},
+                {axis:2,sign:1,label:'顶',corners:[[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]]},
+                {axis:2,sign:-1,label:'底',corners:[[-1,1,-1],[1,1,-1],[1,-1,-1],[-1,-1,-1]]}
+            ];
+            faces.forEach(function(face) {
+                face.normalDepth=axes[face.axis].depth*face.sign;
+                face.points=face.corners.map(function(c) {return vertex(c[0],c[1],c[2]);});
+                face.depth=face.points.reduce(function(sum,p) {return sum+p.depth;},0)/4;
+            });
+            faces=faces.filter(function(face) {return face.normalDepth>-0.001;});
+            faces.sort(function(a,b) {return a.depth-b.depth;});
+            var shapes=[];
+            faces.forEach(function(face) {
+                var cx=0,cy=0;
+                var points=face.points.map(function(point) {cx+=point.x/4;cy+=point.y/4;return svgNumber(point.x)+','+svgNumber(point.y);}).join(' ');
+                shapes.push('<polygon points="'+points+'" fill="'+theme.button+'" fill-opacity="0.92" stroke="'+theme.border+'" stroke-width="1.2"/>');
+                face.cx=cx;face.cy=cy;
+            });
+            faces.forEach(function(face) {
+                shapes.push('<text x="'+svgNumber(face.cx)+'" y="'+svgNumber(face.cy+4)+'" text-anchor="middle" fill="'+theme.text+'" font-size="11" font-weight="600">'+face.label+'</text>');
+            });
+            return '<g inkscape:groupmode="layer" inkscape:label="Orientation Axis" id="export-orientation" transform="translate('+svgNumber(Math.max(14,width-118))+' '+svgNumber(Math.max(14,height-118))+')">' +
+                '<rect width="104" height="104" rx="8" fill="'+theme.base+'" fill-opacity="0.40" stroke="'+theme.border+'"/>'+shapes.join('')+'</g>';
+        }
+
+        function buildVectorSvg() {
+            if (!vectorProjectionHandler || !vectorViewportHandler)
+                return '';
+            var viewport = vectorViewportHandler();
+            var width = Math.max(1, viewport.width), height = Math.max(1, viewport.height);
+            var background = vectorBackgroundHandler ? vectorBackgroundHandler() : groundBackground;
+            var segments = getVisibleSegments();
+            var minValue = Infinity, maxValue = -Infinity;
+            segments.forEach(function(segment) {
+                var value = Number(segment[currentField]);
+                if (isFinite(value)) { minValue = Math.min(minValue, value); maxValue = Math.max(maxValue, value); }
+                var endValue = Number(segmentEndMetric(segment));
+                if (isFinite(endValue)) { minValue = Math.min(minValue, endValue); maxValue = Math.max(maxValue, endValue); }
+            });
+            if (!isFinite(minValue)) { minValue = 0; maxValue = 1; }
+            var vectorRange = resolveColorRange(minValue, maxValue);
+            minValue = vectorRange.min;
+            maxValue = vectorRange.max;
+
+            var base = getCurtainBase();
+            var diagonal = trackData.extent_diag * 0.8;
+            var step = diagonal / 10;
+            var grid = [], artwork = [], definitions = [];
+            for (var g = -diagonal; g <= diagonal + step * 0.01; g += step) {
+                var ga = vectorProjectionHandler(g, base, -diagonal);
+                var gb = vectorProjectionHandler(g, base, diagonal);
+                var gc = vectorProjectionHandler(-diagonal, base, g);
+                var gd = vectorProjectionHandler(diagonal, base, g);
+                grid.push('<line x1="'+svgNumber(ga.x)+'" y1="'+svgNumber(ga.y)+'" x2="'+svgNumber(gb.x)+'" y2="'+svgNumber(gb.y)+'"/>');
+                grid.push('<line x1="'+svgNumber(gc.x)+'" y1="'+svgNumber(gc.y)+'" x2="'+svgNumber(gd.x)+'" y2="'+svgNumber(gd.y)+'"/>');
+            }
+
+            var projected = [];
+            segments.forEach(function(segment, index) {
+                var a = vectorProjectionHandler(segment.x1, (segment.z1-trackData.z_base)*currentExag, -segment.y1);
+                var b = vectorProjectionHandler(segment.x2, (segment.z2-trackData.z_base)*currentExag, -segment.y2);
+                var ba = vectorProjectionHandler(segment.x1, base, -segment.y1);
+                var bb = vectorProjectionHandler(segment.x2, base, -segment.y2);
+                projected.push({a:a,b:b,ba:ba,bb:bb,segment:segment,index:index,depth:(a.zDepth+b.zDepth)/2});
+            });
+            projected.sort(function(a,b) { return a.depth-b.depth; });
+            projected.forEach(function(item) {
+                var rgb = getColorRgb(item.segment[currentField], minValue, maxValue);
+                var endRgb = getColorRgb(segmentEndMetric(item.segment), minValue, maxValue);
+                var color = 'rgb('+rgb.r+','+rgb.g+','+rgb.b+')';
+                var endColor = 'rgb('+endRgb.r+','+endRgb.g+','+endRgb.b+')';
+                var gradientId = 'curtain-gradient-' + item.index;
+                var curtainMaskId = 'curtain-mask-' + item.index;
+                var trackGradientId = 'track-gradient-' + item.index;
+                definitions.push('<linearGradient id="'+gradientId+'" gradientUnits="userSpaceOnUse" x1="'+svgNumber(item.a.x)+'" y1="'+svgNumber(item.a.y)+'" x2="'+svgNumber(item.b.x)+'" y2="'+svgNumber(item.b.y)+'"><stop offset="0" stop-color="'+color+'"/><stop offset="1" stop-color="'+endColor+'"/></linearGradient>');
+                definitions.push('<linearGradient id="'+curtainMaskId+'-fade" gradientUnits="userSpaceOnUse" x1="'+svgNumber((item.a.x+item.b.x)/2)+'" y1="'+svgNumber((item.a.y+item.b.y)/2)+'" x2="'+svgNumber((item.ba.x+item.bb.x)/2)+'" y2="'+svgNumber((item.ba.y+item.bb.y)/2)+'"><stop offset="0" stop-color="white" stop-opacity="0.55"/><stop offset="1" stop-color="white" stop-opacity="0.08"/></linearGradient><mask id="'+curtainMaskId+'"><rect x="0" y="0" width="'+svgNumber(width)+'" height="'+svgNumber(height)+'" fill="url(#'+curtainMaskId+'-fade)"/></mask>');
+                definitions.push('<linearGradient id="'+trackGradientId+'" gradientUnits="userSpaceOnUse" x1="'+svgNumber(item.a.x)+'" y1="'+svgNumber(item.a.y)+'" x2="'+svgNumber(item.b.x)+'" y2="'+svgNumber(item.b.y)+'"><stop offset="0" stop-color="'+color+'"/><stop offset="1" stop-color="'+endColor+'"/></linearGradient>');
+                artwork.push('<path id="curtain-'+item.index+'" d="M '+svgNumber(item.a.x)+' '+svgNumber(item.a.y)+' L '+svgNumber(item.b.x)+' '+svgNumber(item.b.y)+' L '+svgNumber(item.bb.x)+' '+svgNumber(item.bb.y)+' L '+svgNumber(item.ba.x)+' '+svgNumber(item.ba.y)+' Z" fill="url(#'+gradientId+')" mask="url(#'+curtainMaskId+')"/>');
+                artwork.push('<line id="track-'+item.index+'" x1="'+svgNumber(item.a.x)+'" y1="'+svgNumber(item.a.y)+'" x2="'+svgNumber(item.b.x)+'" y2="'+svgNumber(item.b.y)+'" stroke="url(#'+trackGradientId+')" stroke-width="'+svgNumber(currentWidth)+'" stroke-linecap="round"/>');
+            });
+            var legendArtwork = buildVectorLegend(width, height, minValue, maxValue, definitions);
+            var gizmoArtwork = buildVectorGizmo(width, height);
+            return '<?xml version="1.0" encoding="UTF-8"?>' +
+                '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="'+svgNumber(width)+'" height="'+svgNumber(height)+'" viewBox="0 0 '+svgNumber(width)+' '+svgNumber(height)+'">' +
+                '<title>ColorGPX 3D Track View</title><desc>Editable vector export generated by ColorGPX</desc>' +
+                '<defs>'+definitions.join('')+'</defs>' +
+                '<g inkscape:groupmode="layer" inkscape:label="Background" id="background"><rect width="100%" height="100%" fill="'+escapeHtml(background)+'"/></g>' +
+                '<g inkscape:groupmode="layer" inkscape:label="Coordinate Grid" id="coordinate-grid" fill="none" stroke="'+theme.grid+'" stroke-width="1">'+grid.join('')+'</g>' +
+                '<g inkscape:groupmode="layer" inkscape:label="Track and Curtains" id="track-scene">'+artwork.join('')+'</g>' +
+                legendArtwork + gizmoArtwork +
+                '</svg>';
+        }
+
+        function setFollowDisplayEnabled(enabled) {
+            followDisplayEnabled = !!enabled;
+            document.body.classList.toggle('follow-display-active', followDisplayEnabled);
+            if (!followDisplayEnabled) tooltip.style.display = 'none';
+            return followDisplayEnabled;
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, function(character) {
+                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character];
+            });
+        }
+
+        function convertHoverValue(value, sourceUnit, targetUnit, kind) {
+            value = Number(value);
+            if (!isFinite(value)) return null;
+            if (kind === 'elevation') {
+                if (sourceUnit === 'ft') value *= 0.3048;
+                return targetUnit === 'ft' ? value / 0.3048 : value;
+            }
+            if (kind === 'speed') {
+                if (sourceUnit === 'm/s') value *= 3.6;
+                else if (sourceUnit === 'mph') value *= 1.609344;
+                if (targetUnit === 'm/s') return value / 3.6;
+                if (targetUnit === 'mph') return value / 1.609344;
+                return value;
+            }
+            if (kind === 'slope') {
+                var sourceDegrees = sourceUnit === '°' || sourceUnit === 'deg' || sourceUnit === '掳';
+                var targetDegrees = targetUnit === '°' || targetUnit === 'deg' || targetUnit === '掳';
+                if (sourceDegrees && !targetDegrees) return Math.tan(value * Math.PI / 180) * 100;
+                if (!sourceDegrees && targetDegrees) return Math.atan(value / 100) * 180 / Math.PI;
+            }
+            return value;
+        }
+
+        function interpolatedNumber(segment, name, ratio) {
+            var start = Number(segment[name]);
+            var end = Number(segment[name + '2']);
+            if (!isFinite(start)) return null;
+            return isFinite(end) ? start + (end - start) * ratio : start;
+        }
+
+        function interpolatedTime(segment, ratio) {
+            var startText = segment.time || '';
+            var endText = segment.time2 || '';
+            if (!startText) return endText;
+            if (!endText) return startText;
+            var start = Date.parse(String(startText).replace(' ', 'T'));
+            var end = Date.parse(String(endText).replace(' ', 'T'));
+            if (!isFinite(start) || !isFinite(end)) return ratio < 0.5 ? startText : endText;
+            var date = new Date(start + (end - start) * ratio);
+            function pad(value) { return value < 10 ? '0' + value : String(value); }
+            return date.getFullYear() + '-' + pad(date.getMonth()+1) + '-' + pad(date.getDate()) + ' ' +
+                pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+        }
+
+        function tooltipHtml(segment, ratio) {
+            var rows = [];
+            var units = (trackData && trackData.units) || {};
+            var timeValue = interpolatedTime(segment, ratio);
+            if (hoverOptions.show_time && timeValue)
+                rows.push('<tr><td>时间：</td><td>' + escapeHtml(timeValue) + '</td></tr>');
+            [['elevation','高程'], ['speed','速度'], ['slope','坡度']].forEach(function(item) {
+                var key = item[0];
+                if (!hoverOptions['show_' + key]) return;
+                var value = interpolatedNumber(segment, key, ratio);
+                var targetUnit = hoverOptions['unit_' + key];
+                value = convertHoverValue(value, units[key] || targetUnit, targetUnit, key);
+                if (value !== null)
+                    rows.push('<tr><td>' + item[1] + '：</td><td>' + value.toFixed(1) + ' ' + escapeHtml(targetUnit) + '</td></tr>');
+            });
+            var headerTitle = (trackData && (trackData.title || trackData.name || trackData.layer_name)) || (typeof state !== 'undefined' && state.fileName) || '轨迹信息';
+            return rows.length ? '<strong>' + escapeHtml(headerTitle) + '</strong><table>' + rows.join('') + '</table>' : '';
+        }
+
+        function showFollowTooltip(clientX, clientY, segment, ratio) {
+            if (!followDisplayEnabled || !segment) { tooltip.style.display = 'none'; return; }
+            var html = tooltipHtml(segment, Math.max(0, Math.min(1, ratio || 0)));
+            if (!html) { tooltip.style.display = 'none'; return; }
+            tooltip.innerHTML = html;
+            tooltip.style.display = 'block';
+            var left = clientX + 14, top = clientY + 14;
+            if (left + tooltip.offsetWidth > window.innerWidth - 6) left = clientX - tooltip.offsetWidth - 14;
+            if (top + tooltip.offsetHeight > window.innerHeight - 6) top = clientY - tooltip.offsetHeight - 14;
+            tooltip.style.left = Math.max(6, left) + 'px';
+            tooltip.style.top = Math.max(6, top) + 'px';
+        }
+
+        document.getElementById('sidebar-toggle').addEventListener('click', function(event) {
+            event.stopPropagation();
+            var sidebar = document.querySelector('.sidebar');
+            var collapsed = sidebar.classList.toggle('collapsed');
+            document.getElementById('sidebar-toggle-icon').src = collapsed ? sidebarIcons.expand : sidebarIcons.collapse;
+            this.title = collapsed ? '展开设置面板' : '收起设置面板';
+            this.setAttribute('aria-label', this.title);
+            this.setAttribute('aria-label', this.title);
+            setTimeout(function() {
+                if (viewerResizeHandler) viewerResizeHandler();
+            }, 0);
+        });
+
+        function getCurtainBase() {
+            if (!allTrackSegments || !allTrackSegments.length) return 0;
+            var minHeight = Infinity, maxHeight = -Infinity;
+            var start = Math.max(0, Math.min(clipStartIndex, clipEndIndex));
+            var end = Math.min(allTrackSegments.length - 1, Math.max(clipStartIndex, clipEndIndex));
+            for (var i = start; i <= end; i++) {
+                var s = allTrackSegments[i];
+                if (!s) continue;
+                var h1 = (s.z1 - trackData.z_base) * currentExag;
+                var h2 = (s.z2 - trackData.z_base) * currentExag;
+                if (h1 < minHeight) minHeight = h1;
+                if (h1 > maxHeight) maxHeight = h1;
+                if (h2 < minHeight) minHeight = h2;
+                if (h2 > maxHeight) maxHeight = h2;
+            }
+            if (!isFinite(minHeight)) minHeight = 0;
+            if (!isFinite(maxHeight)) maxHeight = minHeight;
+            var padding = Math.max(trackData.extent_diag * 0.035, (maxHeight - minHeight) * 0.12);
+            return minHeight - padding;
+        }
+
+        // Bottom-right orientation indicator shared by both render engines.
+        var gizmoCanvas = document.getElementById('orientation-gizmo');
+        var gizmoCtx = gizmoCanvas.getContext('2d');
+        var gizmoHitAreas = { vertices: [], edges: [], faces: [] };
+        var gizmoViewHandler = null;
+        var gizmoAnimationFrame = null;
+        var gizmoHoveredHit = null;
+        var lastGizmoAxes = null;
+
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+        }
+
+        function pointInPolygon(x, y, points) {
+            var inside = false;
+            for (var i = 0, j = points.length - 1; i < points.length; j = i++) {
+                var xi = points[i].x, yi = points[i].y;
+                var xj = points[j].x, yj = points[j].y;
+                if (((yi > y) !== (yj > y)) &&
+                    (x < (xj - xi) * (y - yi) / ((yj - yi) || 0.00001) + xi)) inside = !inside;
+            }
+            return inside;
+        }
+
+        function distanceToSegment(px, py, a, b) {
+            var dx = b.x - a.x, dy = b.y - a.y;
+            var length2 = dx * dx + dy * dy;
+            if (!length2) return Math.sqrt((px-a.x)*(px-a.x) + (py-a.y)*(py-a.y));
+            var t = Math.max(0, Math.min(1, ((px-a.x)*dx + (py-a.y)*dy) / length2));
+            var qx = a.x + t * dx, qy = a.y + t * dy;
+            return Math.sqrt((px-qx)*(px-qx) + (py-qy)*(py-qy));
+        }
+
+        function hitTestGizmo(x, y) {
+            var i, item, dx, dy;
+            for (i = 0; i < gizmoHitAreas.vertices.length; i++) {
+                item = gizmoHitAreas.vertices[i];
+                dx = x - item.point.x; dy = y - item.point.y;
+                if (dx*dx + dy*dy <= 81) return { type: 'vertex', direction: item.direction };
+            }
+            for (i = 0; i < gizmoHitAreas.edges.length; i++) {
+                item = gizmoHitAreas.edges[i];
+                if (distanceToSegment(x, y, item.a, item.b) <= 6)
+                    return { type: 'edge', direction: item.direction };
+            }
+            for (i = gizmoHitAreas.faces.length - 1; i >= 0; i--) {
+                item = gizmoHitAreas.faces[i];
+                if (pointInPolygon(x, y, item.points))
+                    return { type: 'face', direction: item.direction };
+            }
+            return null;
+        }
+
+        gizmoCanvas.addEventListener('mousemove', function(e) {
+            var rect = gizmoCanvas.getBoundingClientRect();
+            var hit = hitTestGizmo(
+                (e.clientX - rect.left) * gizmoCanvas.width / rect.width,
+                (e.clientY - rect.top) * gizmoCanvas.height / rect.height);
+            gizmoCanvas.style.cursor = hit ? 'pointer' : 'default';
+            var oldKey = gizmoHoveredHit ? gizmoHoveredHit.type + gizmoHoveredHit.direction.join(',') : '';
+            var newKey = hit ? hit.type + hit.direction.join(',') : '';
+            if (oldKey !== newKey) {
+                gizmoHoveredHit = hit;
+                if (lastGizmoAxes) drawOrientationGizmo(lastGizmoAxes);
+            }
+        });
+        gizmoCanvas.addEventListener('mouseleave', function() {
+            gizmoCanvas.style.cursor = 'default';
+            if (gizmoHoveredHit) {
+                gizmoHoveredHit = null;
+                if (lastGizmoAxes) drawOrientationGizmo(lastGizmoAxes);
+            }
+        });
+        gizmoCanvas.addEventListener('click', function(e) {
+            if (!gizmoViewHandler) return;
+            var rect = gizmoCanvas.getBoundingClientRect();
+            var hit = hitTestGizmo(
+                (e.clientX - rect.left) * gizmoCanvas.width / rect.width,
+                (e.clientY - rect.top) * gizmoCanvas.height / rect.height);
+            if (hit) gizmoViewHandler(hit.direction);
+        });
+
+        function drawOrientationGizmo(axes) {
+            lastGizmoAxes = axes.map(function(axis) {
+                return { label: axis.label, x: axis.x, y: axis.y, depth: axis.depth };
+            });
+            // Maximum safe cube size for every 3D orientation:
+            // halfSize * sqrt(3) <= 52 - 2 px frame clearance.
+            var cx = 52, cy = 52, halfSize = 28.86;
+                        <option value="m">米 (m)</option>
+                        <option value="ft">英尺 (ft)</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="settings-unit-speed">速度单位 (Speed):</label>
+                    <select id="settings-unit-speed">
+                        <option value="km/h">公里/小时 (km/h)</option>
+                        <option value="mph">英里/小时 (mph)</option>
+                        <option value="m/s">米/秒 (m/s)</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="settings-unit-slope">坡度单位 (Slope):</label>
+                    <select id="settings-unit-slope">
+                        <option value="%">百分比 (%)</option>
+                        <option value="°">度数 (°)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-save" onclick="saveSettings()">保存</button>
+                <button type="button" class="btn" onclick="closeSettingsModal()">取消</button>
+            </div>
+        </div>
+    </div>
+    <script src="web-app.js"></script>
+</body>
+</html>

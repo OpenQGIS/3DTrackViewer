@@ -1,5 +1,16 @@
 # <img src="icons/icon.svg" width="36" align="center" /> 3D Track Viewer
 
+<p align="left">
+  <img src="https://img.shields.io/badge/status-feature--complete-brightgreen?style=flat&logo=checkmarx&logoColor=white" alt="Status">
+  <a href="https://plugins.qgis.org/plugins/three_d_track_viewer/"><img src="https://img.shields.io/qgis/plugin/v/three_d_track_viewer?style=flat&label=qgis%20plugin&logo=qgis&logoColor=white&color=589632" alt="QGIS Plugin"></a>
+  <a href="https://plugins.qgis.org/plugins/three_d_track_viewer/"><img src="https://img.shields.io/qgis/plugin/dt/three_d_track_viewer?style=flat&label=downloads&color=blue" alt="Downloads"></a>
+  <a href="https://github.com/OpenQGIS/3DTrackViewer/releases"><img src="https://img.shields.io/github/v/release/OpenQGIS/3DTrackViewer?style=flat&color=007ec6&label=release" alt="Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/OpenQGIS/3DTrackViewer?style=flat&color=blue" alt="License"></a>
+</p>
+
+> 💡 **项目状态说明 (Project Status)**：  
+> 本插件三维轨迹渲染与时空视点同步等核心功能已**完全成熟并进入生产稳定期（Feature-Complete）**。后续不再引入激进的新功能重构，开发重心全面转向 QGIS 长期支持版（LTR）与新版本的持续兼容与缺陷维护。
+
 [中文](#中文) | [English](#english)
 
 ---

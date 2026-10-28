@@ -2,10 +2,6 @@
 
 <p align="left">
   <img src="https://img.shields.io/badge/status-feature--complete-brightgreen?style=flat&logo=checkmarx&logoColor=white" alt="Status">
-  <a href="https://plugins.qgis.org/plugins/three_d_track_viewer/"><img src="https://img.shields.io/qgis/plugin/v/three_d_track_viewer?style=flat&label=qgis%20plugin&logo=qgis&logoColor=white&color=589632" alt="QGIS Plugin"></a>
-  <a href="https://plugins.qgis.org/plugins/three_d_track_viewer/"><img src="https://img.shields.io/qgis/plugin/dt/three_d_track_viewer?style=flat&label=downloads&color=blue" alt="Downloads"></a>
-  <a href="https://github.com/OpenQGIS/3DTrackViewer/releases"><img src="https://img.shields.io/github/v/release/OpenQGIS/3DTrackViewer?style=flat&color=007ec6&label=release" alt="Release"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/OpenQGIS/3DTrackViewer?style=flat&color=blue" alt="License"></a>
 </p>
 
 > 💡 **项目状态说明 (Project Status)**：  
